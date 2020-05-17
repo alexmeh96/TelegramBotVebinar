@@ -1,11 +1,15 @@
 package org.itmo;
 
-import org.itmo.Components.Greeting;
+import org.itmo.Components.MainMenu;
+import org.itmo.Components.TelegramFacade;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.telegram.telegrambots.bots.DefaultBotOptions;
 import org.telegram.telegrambots.bots.TelegramWebhookBot;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardRemove;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 public class MainTelegramBot extends TelegramWebhookBot {
@@ -13,32 +17,22 @@ public class MainTelegramBot extends TelegramWebhookBot {
     private String botUserName;
     private String botToken;
 
-    public  MainTelegramBot(DefaultBotOptions botOptions){
+    @Autowired
+    private TelegramFacade telegramFacade;
+
+    public MainTelegramBot(DefaultBotOptions botOptions){
         super(botOptions);
     }
+
     public MainTelegramBot(){};
 
 
     @Override
-    public BotApiMethod onWebhookUpdateReceived(Update update) {
+    public BotApiMethod<?> onWebhookUpdateReceived(Update update) {
 
-        if(update.getMessage().getText().equals("/start")){
-            long chat_id = update.getMessage().getChatId();
+        SendMessage sendMessage = telegramFacade.createAnswer(update);
 
-            String username = update.getMessage().getFrom().getUserName();
-
-            Greeting greeting = new Greeting(username);
-            String message = greeting.helloMsg();
-
-            try {
-                execute(new SendMessage(chat_id, message));
-            } catch (TelegramApiException e) {
-                e.printStackTrace();
-            }
-
-        }
-
-        return null;
+        return sendMessage;
     }
 
     @Override

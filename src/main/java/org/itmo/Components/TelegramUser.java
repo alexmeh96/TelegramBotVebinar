@@ -20,7 +20,10 @@ import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.List;
 
-public class Greeting {
+
+//аутентификация приветствие
+@Component
+public class TelegramUser {
     private Sheets sheetsService;
     private String APPLICATION_NAME = "Google Sheet";
     private String SPREADSHEET_ID = "1wOOgK2KK6OE7tmLPsJR-_Jt_sBVfCtD0Qk-n1CqZpbc";
@@ -28,11 +31,16 @@ public class Greeting {
 
     private String uploadPath = "/home/alex/work/java/Projects/TelegramBotVebinar/src/main/resources/";
 
-    public Greeting(){}
+    private boolean isUser = false;
 
-    public Greeting(String username){
-        telegram_username = username;
+    public TelegramUser(){}
 
+    public boolean isUser() {
+        return isUser;
+    }
+
+    public void setUser(boolean user) {
+        isUser = user;
     }
 
     private Credential authorize() throws Exception {
@@ -76,8 +84,8 @@ public class Greeting {
         List<List<Object>> values = response.getValues();
         return values;
     }
-    public String helloMsg() {
-
+    public boolean findUser(String username) {
+        telegram_username = username;
         List<List<Object>> values = null;
         try {
             values = value();
@@ -90,15 +98,25 @@ public class Greeting {
         } else {
             for (List row : values){
                 if (row.get(3).equals(telegram_username)){
-                    return "Привет, " + row.get(1) + "! Я бот помощник.\n" +
-                            " - буду держать вас в курсе всех  ивентов вебинара\n" +
-                            " - отправлю и проверю ваше дз\n" +
-                            " - если есть вопросы помогу связаться с администратором или спикером" +
-                            " - напомню ваш пароль";
+                    isUser = true;
+                    return true;
                 }
 
             }
         }
+        return false;
+    }
+
+    public String welcomeMessage() {
+        return "Привет, " + telegram_username + "! Я бот помощник.\n" +
+                " - буду держать вас в курсе всех  ивентов вебинара\n" +
+                " - отправлю и проверю ваше дз\n" +
+                " - если есть вопросы помогу связаться с администратором или спикером" +
+                " - напомню ваш пароль";
+
+    }
+
+    public String negativeMessage(){
         return "Привет, вы еще не зарегистрировались на курс \n" +
                 "Если вы регистрировались на курс, напишите нашему администратору @MarkStav";
     }
