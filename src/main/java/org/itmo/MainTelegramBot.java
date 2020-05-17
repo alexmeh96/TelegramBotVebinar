@@ -1,5 +1,6 @@
 package org.itmo;
 
+import org.itmo.Components.Greeting;
 import org.telegram.telegrambots.bots.DefaultBotOptions;
 import org.telegram.telegrambots.bots.TelegramWebhookBot;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
@@ -20,15 +21,21 @@ public class MainTelegramBot extends TelegramWebhookBot {
 
     @Override
     public BotApiMethod onWebhookUpdateReceived(Update update) {
-        if (update.getMessage() != null && update.getMessage().hasText()) {
+
+        if(update.getMessage().getText().equals("/start")){
             long chat_id = update.getMessage().getChatId();
 
+            String username = update.getMessage().getFrom().getUserName();
+
+            Greeting greeting = new Greeting(username);
+            String message = greeting.helloMsg();
 
             try {
-                execute(new SendMessage(chat_id, "Hi " + update.getMessage().getText()));
+                execute(new SendMessage(chat_id, message));
             } catch (TelegramApiException e) {
                 e.printStackTrace();
             }
+
         }
 
         return null;

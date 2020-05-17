@@ -30,7 +30,27 @@
             <artifactId>telegrambots-spring-boot-starter</artifactId>
             <version>4.8.1</version>
         </dependency>
+
+        <!-- Google sheets-->
+        <dependency>
+            <groupId>com.google.apis</groupId>
+            <artifactId>google-api-services-sheets</artifactId>
+            <version>v4-rev612-1.25.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.gdata</groupId>
+            <artifactId>core</artifactId>
+            <version>1.47.1</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>29.0-jre</version>
+        </dependency>
+
     </dependencies>
+
+
 
     <build>
         <plugins>
