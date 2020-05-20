@@ -1,10 +1,15 @@
 package org.itmo.Components;
 
+import org.itmo.Components.googleDrive.TelegramBotGoogleDrive;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.telegram.telegrambots.meta.api.methods.GetFile;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.objects.File;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardRemove;
+
+
 
 //обработка сообщения
 @Component
@@ -16,6 +21,8 @@ public class TelegramFacade {
     TelegramUser telegramUser;
     @Autowired
     BotMessage botMessage;
+    @Autowired
+    TelegramBotGoogleDrive telegramBotGoogleDrive;
 
     public SendMessage createAnswer(Update update){
         String message = update.getMessage().getText();
@@ -58,12 +65,14 @@ public class TelegramFacade {
         switch (botState){
             case START:
                 String username = update.getMessage().getFrom().getUserName();
-
+                System.out.println(username);
                 if(telegramUser.findUser(username)){
-                //if(telegramUser.findUser("@MarkStav")){
                     String message = telegramUser.welcomeMessage();
                     MainMenu mainMenu = new MainMenu();
                     sendMessage = mainMenu.getMainMenuMessage(chat_id, message);
+
+//                    if(!telegramBotGoogleDrive.findDirectory(telegramUser.getUsername_sheets()))
+//                        telegramBotGoogleDrive.activate(telegramUser.getUsername_sheets());
                 }
                 else {
                     sendMessage.setChatId(chat_id);
@@ -89,7 +98,17 @@ public class TelegramFacade {
                 break;
             case ASK_SEND_HOMEWORK:
                 sendMessage.setChatId(chat_id);
-                sendMessage.setText("в разработке");
+                System.out.println("ASK_SEND_HOMEWORK");
+                String message = telegramBotGoogleDrive.sendHomework();
+                sendMessage.setText(message);
+                //sendMessage.setText("дз");
+
+                String fileId = update.getMessage().getDocument().getFileId();
+                GetFile getFile = new GetFile();
+
+                File file = new File();
+                getFile.setFileId(fileId);
+
                 break;
             case ASK_PASSWORD:
                 sendMessage.setChatId(chat_id);

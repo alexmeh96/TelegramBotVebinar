@@ -27,7 +27,8 @@ public class TelegramUser {
     private Sheets sheetsService;
     private String APPLICATION_NAME = "Google Sheet";
     private String SPREADSHEET_ID = "1wOOgK2KK6OE7tmLPsJR-_Jt_sBVfCtD0Qk-n1CqZpbc";
-    private String telegram_username = "@MarkStav";
+    private String username_sheets;
+    private String telegram_username;
 
     private String uploadPath = "/home/alex/work/java/Projects/TelegramBotVebinar/src/main/resources/";
 
@@ -41,6 +42,10 @@ public class TelegramUser {
 
     public void setUser(boolean user) {
         isUser = user;
+    }
+
+    public String getUsername_sheets() {
+        return username_sheets;
     }
 
     private Credential authorize() throws Exception {
@@ -75,7 +80,7 @@ public class TelegramUser {
 
     public List value() throws Exception {
         sheetsService = getSheetsService();
-        String range = "LeadsFromTilda!A2:H400";
+        String range = "LeadsFromTilda!A2:E400";
 
         ValueRange response = sheetsService.spreadsheets().values()
                 .get(SPREADSHEET_ID, range)
@@ -85,7 +90,7 @@ public class TelegramUser {
         return values;
     }
     public boolean findUser(String username) {
-        telegram_username = username;
+
         List<List<Object>> values = null;
         try {
             values = value();
@@ -97,7 +102,9 @@ public class TelegramUser {
             System.out.println("No data found");
         } else {
             for (List row : values){
-                if (row.get(3).equals(telegram_username)){
+                if (row.get(4).equals(username)){
+                    telegram_username=username;
+                    username_sheets = (String) row.get(0);
                     isUser = true;
                     return true;
                 }
@@ -107,8 +114,10 @@ public class TelegramUser {
         return false;
     }
 
+
+
     public String welcomeMessage() {
-        return "Привет, " + telegram_username + "! Я бот помощник.\n" +
+        return "Привет, " + username_sheets + "! Я бот помощник.\n" +
                 " - буду держать вас в курсе всех  ивентов вебинара\n" +
                 " - отправлю и проверю ваше дз\n" +
                 " - если есть вопросы помогу связаться с администратором или спикером" +
@@ -129,8 +138,25 @@ public class TelegramUser {
             System.out.println("No data found");
         } else {
             for (List row : values){
-                if (row.get(3).equals(telegram_username)){
-                    return (String)row.get(7);
+                if (row.get(4).equals(telegram_username)){
+                    return (String)row.get(2);
+                }
+
+            }
+        }
+        return "Возникла ошибка, обратитесь к администратору @MarkStav";
+    }
+
+    public String returnMail() throws Exception {
+
+        List<List<Object>> values = value();
+
+        if (values == null || values.isEmpty()){
+            System.out.println("No data found");
+        } else {
+            for (List row : values){
+                if (row.get(4).equals(telegram_username)){
+                    return (String)row.get(1);
                 }
 
             }
