@@ -1,4 +1,4 @@
-package org.itmo.Components;
+package org.itmo.Components.botButton;
 
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;

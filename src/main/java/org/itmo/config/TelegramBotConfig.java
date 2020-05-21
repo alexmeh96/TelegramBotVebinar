@@ -8,7 +8,7 @@ import org.telegram.telegrambots.bots.DefaultBotOptions;
 import org.telegram.telegrambots.meta.ApiContext;
 
 @Configuration
-@ConfigurationProperties(prefix = "telegrambot")
+//@ConfigurationProperties(prefix = "telegrambot")
 public class TelegramBotConfig {
     private String webHookPath;
     private String botUserName;

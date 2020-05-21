@@ -5,8 +5,7 @@ import java.io.File;
 // Проверка расширения файла(для загрузки на гугл диск
 public class CheckTypeDoc {
     // вытаскиваем расширение
-    private static String getFileExtension(File file) {
-        String fileName = file.getName();
+    private static String getFileExtension(String fileName) {
         // если в имени файла есть точка и она не является первым символом в названии файла
         if (fileName.lastIndexOf(".") != -1 && fileName.lastIndexOf(".") != 0)
             // то вырезаем все знаки после последней точки в названии файла, то есть ХХХХХ.txt -> txt
@@ -15,8 +14,8 @@ public class CheckTypeDoc {
         else return "";
     }
     // делаем проверку и возвращаем шаблон
-    public static String CheckType (File file){
-        switch (getFileExtension(file)) {
+    public static String CheckType (String fileName){
+        switch (getFileExtension(fileName)) {
             case "txt":
                 return "text/plain";
             case "pdf":
@@ -32,7 +31,7 @@ public class CheckTypeDoc {
             case "tar":
                 return "application/tar";
             default:
-                throw new IllegalStateException("Unexpected value: " + getFileExtension(file));
+                throw new IllegalStateException("Unexpected value: " + getFileExtension(fileName));
         }
     }
 }

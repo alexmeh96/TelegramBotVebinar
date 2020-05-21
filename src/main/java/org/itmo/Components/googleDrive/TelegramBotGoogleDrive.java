@@ -6,26 +6,28 @@ import org.springframework.stereotype.Component;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
 
 @Component
 public class TelegramBotGoogleDrive {
     // Параметры
-    public  String PROJECT_NAME_FOLDER = "Проект 1";
-    public  String NEW_NAME_FILE = "дз1";
-    public  String STUDENT_NAME_FOLDER = "Иван Иванов";
+    public final String PROJECT_NAME_FOLDER = "Проект 1";
+    public final String NEW_NAME_FILE = "дз1";
+    public final String HOMEWORK_DIRECTORY = "Папка с дз";
     public  String IventID;
-    public  String STUDENT_FOLDER_ID;
-    // заглушка для теста с файлом на пк
-//    public java.io.File UPLOAD_FILE = new java.io.File("/home/alex/work/java/Projects/TelegramBotVebinar/src/main/resources/test.zip");
 
     File folder_hw;
     File folder_student;
 
-//    public TelegramBotGoogleDrive(){
-//        deploy();
-//    }
+
+
+    public TelegramBotGoogleDrive(){
+        //folder_hw.setId("1k5GimVe3Hn5M3P4SUfGFEdWwjPsG-mKL");
+        //folder_hw.setName("Папка с дз");
+        deploy();
+    }
 
     //-------------------------------------ЗАПУСК ОДИН РАЗ СРАЗУ ПОСЛЕ ДЕПЛОЯ -------------------------
     public void deploy() {
@@ -33,7 +35,8 @@ public class TelegramBotGoogleDrive {
             // Создание папки проекта
             File folder_project = CreateFolder.createGoogleFolder(null, PROJECT_NAME_FOLDER);
             // Создание папки с домашними заданиями всех пользователей
-            folder_hw = CreateFolder.createGoogleFolder(folder_project.getId(), "Папка с дз");
+            folder_hw = CreateFolder.createGoogleFolder(folder_project.getId(), HOMEWORK_DIRECTORY);
+            System.out.println(folder_hw);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -53,14 +56,13 @@ public class TelegramBotGoogleDrive {
     }
 
     // -----------------ЗАПУСК КАЖДЫЙ РАЗ ПОСЛЕ АКТИВАЦИИ КНОПКИ "Отправить дз -> Дз1" -----------------
-    public String sendHomework() {
+    public String sendHomework(InputStream inputStream, String fileName) {
         System.out.println("sendHomework");
         // Создание файлов с дз
         File googleFile = null;
         try {
-            java.io.File UPLOAD_FILE = new java.io.File("/home/alex/work/java/Projects/TelegramBotVebinar/src/main/resources/test.zip");
             ////System.getProperty("user.home")+
-            googleFile = CreateHWFile.createGoogleFile(folder_student.getId(), CheckTypeDoc.CheckType(UPLOAD_FILE), NEW_NAME_FILE, UPLOAD_FILE);
+            googleFile = CreateHWFile.createGoogleFile(folder_student.getId(), CheckTypeDoc.CheckType(fileName), NEW_NAME_FILE, inputStream);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -71,13 +73,14 @@ public class TelegramBotGoogleDrive {
     // Поиск папки студента
     public boolean findDirectory(String userNameSheet){
         try {
-            //прочекать про одинаковые дирректории
-            List<File> rootGoogleFolders = GetSubFoldersByName.getGoogleRootFoldersByName(userNameSheet);
-            System.out.println(userNameSheet);
-            System.out.println(rootGoogleFolders);
+            List<File> rootGoogleParentFolders = GetSubFoldersByName.getGoogleRootFoldersByName("Проект 1");
+            for (File folder : rootGoogleParentFolders) {
+                GetSubFoldersByName.FOLDER_PARENT_ID = folder.getId();
+            }
+
+            List<File> rootGoogleFolders = GetSubFoldersByName.getGoogleSubFolderByName(GetSubFoldersByName.FOLDER_PARENT_ID, "Папка с дз");
             for (File folder : rootGoogleFolders) {
-                STUDENT_FOLDER_ID = folder.getId();
-                return true;
+                System.out.println("Folder ID: " + folder.getId() + " --- Name: " + folder.getName());
             }
 
         } catch (IOException e) {
@@ -85,6 +88,7 @@ public class TelegramBotGoogleDrive {
         }
         return false;
     }
+
 
 
 
@@ -119,4 +123,8 @@ public class TelegramBotGoogleDrive {
 //            pageToken = result.getNextPageToken();
 //        } while (pageToken != null);
     }
+
+
+
+
 }

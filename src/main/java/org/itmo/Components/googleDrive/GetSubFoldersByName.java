@@ -1,15 +1,17 @@
 package org.itmo.Components.googleDrive;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+
 
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.model.File;
 import com.google.api.services.drive.model.FileList;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
 public class GetSubFoldersByName {
 
+    public static String FOLDER_PARENT_ID;
     // com.google.api.services.drive.model.File
     public static final List<File> getGoogleSubFolderByName(String googleFolderIdParent, String subFolderName)
             throws IOException {
@@ -17,7 +19,7 @@ public class GetSubFoldersByName {
         Drive driveService = GoogleDriveUtils.getDriveService();
 
         String pageToken = null;
-        List<File> list = new ArrayList<>();
+        List<File> list = new ArrayList<File>();
 
         String query = null;
         if (googleFolderIdParent == null) {
@@ -47,5 +49,7 @@ public class GetSubFoldersByName {
     public static final List<File> getGoogleRootFoldersByName(String subFolderName) throws IOException {
         return getGoogleSubFolderByName(null,subFolderName);
     }
+
+
 
 }

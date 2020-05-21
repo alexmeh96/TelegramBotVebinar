@@ -9,5 +9,6 @@ public enum BotState {
     ASK_ADMIN,
     ASK_SPIKER,
     ASK_MAIN_MENU,
+    ASK_SEND_FILE,
     ANOTHER
 }

@@ -30,10 +30,10 @@ public class CreateFolder {
         File file = driveService.files().create(fileMetadata).setFields("id, name").execute();
 
         // Даём спикеру доступ к дз
-        SendPermission.createPermissionForEmailSPEAKER(file.getId(), SendPermission.GOOGLE_SPEAKER_EMAIL);
+        //SendPermission.createPermissionForEmailSPEAKER(file.getId(), SendPermission.GOOGLE_SPEAKER_EMAIL);
 
         // Даём студенту доступ к дз
-        SendPermission.createPermissionForEmailSTUDENT(file.getId(), SendPermission.GOOGLE_STUDENT_EMAIL);
+       // SendPermission.createPermissionForEmailSTUDENT(file.getId(), SendPermission.GOOGLE_STUDENT_EMAIL);
 
         return file;
     }
