@@ -30,6 +30,11 @@ public class CheckTypeDoc {
                 return "application/rar";
             case "tar":
                 return "application/tar";
+            case "jpeg":
+            case "jpg":
+                return "image/jpeg";
+            case "png":
+                return "image/png";
             default:
                 throw new IllegalStateException("Unexpected value: " + getFileExtension(fileName));
         }

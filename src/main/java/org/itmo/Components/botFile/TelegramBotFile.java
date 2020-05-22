@@ -26,11 +26,13 @@ public class TelegramBotFile {
 
             BufferedReader in = new BufferedReader(new InputStreamReader(url.openStream()));
             String res = in.readLine();
+            in.close();
             JSONObject jresult = new JSONObject(res);
             JSONObject path = jresult.getJSONObject("result");
             String file_path = path.getString("file_path");
 
             inputStream = new URL(FILE_PATH_URL + file_path).openStream();
+
 
             System.out.println(inputStream);
 

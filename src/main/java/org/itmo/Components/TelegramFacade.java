@@ -13,6 +13,8 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardRemove;
 
+import java.io.InputStream;
+
 
 //обработка сообщения
 @Component
@@ -98,6 +100,9 @@ public class TelegramFacade {
                         telegramBotGoogleDrive.activate(usernameSheet);
 
                         usersTelegramBot.getUserMap().put(username, new User(username, usernameSheet));
+
+                        System.out.println(username + " = " + usersTelegramBot.getUserMap().get(username));
+
                     }else {
 
                         sendMessage.setText(botMessage.negativeMessage());
@@ -110,53 +115,75 @@ public class TelegramFacade {
                     String message = botMessage.welcomeMessage(usersTelegramBot.getUserMap().get(username).getUsernameSheet());
                     MainMenu mainMenu = new MainMenu();
                     sendMessage = mainMenu.getMainMenuMessage(chat_id, message);
+
+                    System.out.println(username + " = " + usersTelegramBot.getUserMap().get(username));
                 }
 
                 break;
             case ASK_SUPPORT:
-                if(usersTelegramBot.getUserMap().get(username).isSendHomework()){
+                if(usersTelegramBot.getUserMap().containsKey(username) && usersTelegramBot.getUserMap().get(username).isSendHomework()){
                     usersTelegramBot.getUserMap().get(username).setSendHomework(false);
                 }
                 Support support = new Support();
                 sendMessage = support.getSupportMessage(chat_id);
                 break;
             case ASK_ADMIN:
-                if(usersTelegramBot.getUserMap().get(username).isSendHomework()){
+                if(usersTelegramBot.getUserMap().containsKey(username) && usersTelegramBot.getUserMap().get(username).isSendHomework()){
                     usersTelegramBot.getUserMap().get(username).setSendHomework(false);
                 }
                 sendMessage.setText(botMessage.messageAdmin());
                 break;
             case ASK_SPIKER:
-                if(usersTelegramBot.getUserMap().get(username).isSendHomework()){
+                if(usersTelegramBot.getUserMap().containsKey(username) && usersTelegramBot.getUserMap().get(username).isSendHomework()){
                     usersTelegramBot.getUserMap().get(username).setSendHomework(false);
                 }
                 sendMessage.setText(botMessage.messageSpiker());
                 break;
             case ASK_MAIN_MENU:
-                if(usersTelegramBot.getUserMap().get(username).isSendHomework()){
+                if(usersTelegramBot.getUserMap().containsKey(username) && usersTelegramBot.getUserMap().get(username).isSendHomework()){
                     usersTelegramBot.getUserMap().get(username).setSendHomework(false);
                 }
                 MainMenu mainMenu = new MainMenu();
                 sendMessage = mainMenu.getMainMenuMessage(chat_id, "меню");
                 break;
             case ASK_SEND_HOMEWORK:
+
+                System.out.println(username + " = " + usersTelegramBot.getUserMap().get(username));
+
                 sendMessage.setText("загрузите дз пожалуйста");
                 username = update.getMessage().getFrom().getUserName();
-                usersTelegramBot.getUserMap().get(username).setSendHomework(true);
+
+                if(usersTelegramBot.getUserMap().containsKey(username)) {
+                    usersTelegramBot.getUserMap().get(username).setSendHomework(true);
+                }
                 break;
             case ASK_SEND_FILE:
                 username = update.getMessage().getFrom().getUserName();
 
+                System.out.println(username + " = " + usersTelegramBot.getUserMap().get(username));
+
+
                 if(usersTelegramBot.getUserMap().containsKey(username) && usersTelegramBot.getUserMap().get(username).isSendHomework()){
                     String fileId = update.getMessage().getDocument().getFileId();
                     String fileName = update.getMessage().getDocument().getFileName();
-                    String text = telegramBotGoogleDrive.sendHomework(telegramBotFile.uploadUserFile(fileName, fileId), fileName);
-                    sendMessage.setText(text);
+
+                    System.out.println("fileId = " +fileId);
+
+                    try (InputStream inputStream = telegramBotFile.uploadUserFile(fileName, fileId)){
+                        String text = telegramBotGoogleDrive.sendHomework(inputStream, fileName);
+                        sendMessage.setText(text);
+                    }catch (Exception e){
+                        e.printStackTrace();
+                    }
+
+
                     usersTelegramBot.getUserMap().get(username).setSendHomework(false);
+
+                    System.out.println("отправлено");
                 }
                 break;
             case ASK_PASSWORD:
-                if(usersTelegramBot.getUserMap().get(username).isSendHomework()){
+                if(usersTelegramBot.getUserMap().containsKey(username) && usersTelegramBot.getUserMap().get(username).isSendHomework()){
                     usersTelegramBot.getUserMap().get(username).setSendHomework(false);
                 }
                 sendMessage.setChatId(chat_id);
