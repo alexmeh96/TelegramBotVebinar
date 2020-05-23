@@ -8,6 +8,7 @@ public class BotMessage {
 
     @Value("${botAdmin}")
     private String botAdmin;
+
     @Value("${botSpiker}")
     private String botSpiker;
 

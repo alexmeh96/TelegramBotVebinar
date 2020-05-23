@@ -2,6 +2,7 @@ package org.itmo.Components.googleDrive;
 
 import com.google.api.services.drive.model.File;
 import com.google.api.services.drive.model.FileList;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.io.ByteArrayOutputStream;
@@ -13,9 +14,14 @@ import java.util.List;
 @Component
 public class TelegramBotGoogleDrive {
     // Параметры
-    public final String PROJECT_NAME_FOLDER = "Проект 1";
+    @Value("${projectName}")
+    public String PROJECT_NAME_FOLDER;
+
     public final String NEW_NAME_FILE = "дз1";
-    public final String HOMEWORK_DIRECTORY = "Папка с дз";
+
+    @Value("${HWDirectory}")
+    public String HOMEWORK_DIRECTORY;
+
     public  String IventID;
 
     File folder_hw;
@@ -74,12 +80,12 @@ public class TelegramBotGoogleDrive {
     // Поиск папки студента
     public boolean findDirectory(String userNameSheet){
         try {
-            List<File> rootGoogleParentFolders = GetSubFoldersByName.getGoogleRootFoldersByName("Проект 1");
+            List<File> rootGoogleParentFolders = GetSubFoldersByName.getGoogleRootFoldersByName(PROJECT_NAME_FOLDER);
             for (File folder : rootGoogleParentFolders) {
                 GetSubFoldersByName.FOLDER_PARENT_ID = folder.getId();
             }
 
-            List<File> rootGoogleFolders = GetSubFoldersByName.getGoogleSubFolderByName(GetSubFoldersByName.FOLDER_PARENT_ID, "Папка с дз");
+            List<File> rootGoogleFolders = GetSubFoldersByName.getGoogleSubFolderByName(GetSubFoldersByName.FOLDER_PARENT_ID, NEW_NAME_FILE);
             for (File folder : rootGoogleFolders) {
                 System.out.println("Folder ID: " + folder.getId() + " --- Name: " + folder.getName());
             }

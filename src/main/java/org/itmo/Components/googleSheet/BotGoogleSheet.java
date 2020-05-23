@@ -28,8 +28,13 @@ public class BotGoogleSheet {
     @Value("${uploadPath}")
     private String uploadPath;
 
+    @Value("${googleSheet}")
+    private String SPREADSHEET_ID;
+
+    @Value("${botAdmin}")
+    private String botAdmin;
+
     private final String APPLICATION_NAME = "Google Sheet";
-    private final String SPREADSHEET_ID = "1wOOgK2KK6OE7tmLPsJR-_Jt_sBVfCtD0Qk-n1CqZpbc";
 
 
     private Credential authorize() throws Exception {
@@ -130,7 +135,7 @@ public class BotGoogleSheet {
 
             }
         }
-        return "Возникла ошибка, обратитесь к администратору @MarkStav";
+        return "Возникла ошибка, обратитесь к администратору " + botAdmin;
     }
 
     public String returnMail(String telegram_username) throws Exception {
@@ -147,6 +152,6 @@ public class BotGoogleSheet {
 
             }
         }
-        return "Возникла ошибка, обратитесь к администратору @MarkStav";
+        return "Возникла ошибка, обратитесь к администратору " + botAdmin;
     }
 }

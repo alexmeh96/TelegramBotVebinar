@@ -2,13 +2,18 @@ package org.itmo.Components.googleDrive;
 
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.model.Permission;
+import org.springframework.beans.factory.annotation.Value;
+import org.itmo.Components.googleSheet.BotGoogleSheet;
 
 import java.io.IOException;
 
 public class SendPermission {
     //    константа с почтой спикера(проверяющего)
-    public static String GOOGLE_SPEAKER_EMAIL = "alex.meh96@gmail.com";
-    public static String GOOGLE_STUDENT_EMAIL = "alex.meh96@gmail.com";
+    @Value("${SpeakerMail}")
+    private String SpeakerMail;
+    BotGoogleSheet sheet = new BotGoogleSheet();
+    public String GOOGLE_SPEAKER_EMAIL = SpeakerMail;
+    public static String GOOGLE_STUDENT_EMAIL = "mark.gurianov@gmail.com";
 
 
     // Даём доступ

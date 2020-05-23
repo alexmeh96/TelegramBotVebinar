@@ -17,6 +17,8 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardRem
 import java.io.InputStream;
 
 
+
+
 //обработка сообщения
 @Component
 public class TelegramFacade {
@@ -151,7 +153,7 @@ public class TelegramFacade {
 
                 System.out.println(username + " = " + usersTelegramBot.getUserMap().get(username));
 
-                sendMessage.setText("загрузите дз пожалуйста");
+                sendMessage.setText("Пожалйста загрузите домашнее задание");
                 username = update.getMessage().getFrom().getUserName();
 
                 if(usersTelegramBot.getUserMap().containsKey(username)) {
@@ -180,7 +182,7 @@ public class TelegramFacade {
 
                     usersTelegramBot.getUserMap().get(username).setSendHomework(false);
 
-                    System.out.println("отправлено");
+                    System.out.println("Домашнее задание отправлено!");
                 }
                 break;
             case ASK_PASSWORD:
@@ -195,7 +197,7 @@ public class TelegramFacade {
                     usersTelegramBot.getUserMap().get(username).setSendHomework(false);
                 }
                 sendMessage.setChatId(chat_id);
-                sendMessage.setText("Моя, твоя, не понимать!");
+                sendMessage.setText("Извините, но я вас не понимаю");
                 break;
 
         }
