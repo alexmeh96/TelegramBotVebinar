@@ -1,16 +1,20 @@
 package org.itmo.Components.model;
 
+import com.google.api.services.drive.model.File;
+
 public class User {
 
     private String username;
     private String usernameSheet;
     private boolean sendHomework;
+    private File userDirectory;
 
     public User(){}
 
-    public User(String username, String usernameSheet) {
+    public User(String username, String usernameSheet, File file) {
         this.username = username;
         this.usernameSheet = usernameSheet;
+        this.userDirectory = file;
         this.sendHomework = false;
     }
 
@@ -36,5 +40,22 @@ public class User {
 
     public void setSendHomework(boolean sendHomework) {
         this.sendHomework = sendHomework;
+    }
+
+    public File getUserDirectory() {
+        return userDirectory;
+    }
+
+    public void setUserDirectory(File userDirectory) {
+        this.userDirectory = userDirectory;
+    }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "username='" + username + '\'' +
+                ", usernameSheet='" + usernameSheet + '\'' +
+                ", sendHomework=" + sendHomework +
+                '}';
     }
 }

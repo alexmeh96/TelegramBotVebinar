@@ -43,7 +43,7 @@ public class TelegramBotGoogleDrive {
     }
 
     // -------------------------------------ЗАПУСК ОДИН РАЗ СРАЗУ ПОСЛЕ АКТИВАЦИИ БОТА -----------------
-    public void activate(String username) {
+    public File activate(String username) {
         // Создание папки для студента
         //find user_sheet_name == true
 
@@ -53,10 +53,11 @@ public class TelegramBotGoogleDrive {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        return folder_student;
     }
 
     // -----------------ЗАПУСК КАЖДЫЙ РАЗ ПОСЛЕ АКТИВАЦИИ КНОПКИ "Отправить дз -> Дз1" -----------------
-    public String sendHomework(InputStream inputStream, String fileName) {
+    public String sendHomework(InputStream inputStream, String fileName, File folder_student) {
         System.out.println("sendHomework");
         // Создание файлов с дз
         File googleFile = null;

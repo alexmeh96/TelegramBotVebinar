@@ -1,5 +1,6 @@
 package org.itmo.Components;
 
+import com.google.api.services.drive.model.File;
 import org.itmo.Components.botButton.MainMenu;
 import org.itmo.Components.botButton.Support;
 import org.itmo.Components.botFile.TelegramBotFile;
@@ -97,9 +98,9 @@ public class TelegramFacade {
                         MainMenu mainMenu = new MainMenu();
                         sendMessage = mainMenu.getMainMenuMessage(chat_id, message);
 
-                        telegramBotGoogleDrive.activate(usernameSheet);
+                        File folderDirectory = telegramBotGoogleDrive.activate(usernameSheet);
 
-                        usersTelegramBot.getUserMap().put(username, new User(username, usernameSheet));
+                        usersTelegramBot.getUserMap().put(username, new User(username, usernameSheet, folderDirectory));
 
                         System.out.println(username + " = " + usersTelegramBot.getUserMap().get(username));
 
@@ -166,11 +167,11 @@ public class TelegramFacade {
                 if(usersTelegramBot.getUserMap().containsKey(username) && usersTelegramBot.getUserMap().get(username).isSendHomework()){
                     String fileId = update.getMessage().getDocument().getFileId();
                     String fileName = update.getMessage().getDocument().getFileName();
-
+                    File userFolder = usersTelegramBot.getUserMap().get(username).getUserDirectory();
                     System.out.println("fileId = " +fileId);
 
                     try (InputStream inputStream = telegramBotFile.uploadUserFile(fileName, fileId)){
-                        String text = telegramBotGoogleDrive.sendHomework(inputStream, fileName);
+                        String text = telegramBotGoogleDrive.sendHomework(inputStream, fileName, userFolder);
                         sendMessage.setText(text);
                     }catch (Exception e){
                         e.printStackTrace();

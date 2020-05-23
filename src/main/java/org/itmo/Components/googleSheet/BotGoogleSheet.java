@@ -19,6 +19,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Component
 public class BotGoogleSheet {
@@ -72,8 +74,22 @@ public class BotGoogleSheet {
         return values;
     }
 
+    private String correctUsername(String text){
+        Pattern pattern = Pattern.compile("[A-Za-z0-9_]{1,}");
+        Matcher matcher = pattern.matcher(text);
+        System.out.println("correctUsername " +text);
+        while (matcher.find()) {
+            String tx = text.substring(matcher.start(), matcher.end());
+            System.out.println("while " + tx);
+            return tx;
+        }
+        return text;
+    }
+
     //Возвращае usernameSheet
     public String findUser(String username) {
+
+
 
         List<List<Object>> values = null;
         try {
@@ -86,9 +102,11 @@ public class BotGoogleSheet {
             System.out.println("No data found");
         } else {
             for (List row : values){
-                if (row.get(4).equals(username)){
+                String name = correctUsername((String) row.get(4));
+                if (name.equals(username)){
 
                     String username_sheets = (String) row.get(0);
+
 
                     return username_sheets;
                 }
