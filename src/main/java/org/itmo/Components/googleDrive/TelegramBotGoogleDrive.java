@@ -2,6 +2,9 @@ package org.itmo.Components.googleDrive;
 
 import com.google.api.services.drive.model.File;
 import com.google.api.services.drive.model.FileList;
+import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -11,6 +14,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
 
+
+@Slf4j
 @Component
 public class TelegramBotGoogleDrive {
     // Параметры
@@ -27,6 +32,7 @@ public class TelegramBotGoogleDrive {
     File folder_hw;
     File folder_student;
 
+    public static final Logger LOGGER = LoggerFactory.getLogger(TelegramBotGoogleDrive.class);
 
 
     public TelegramBotGoogleDrive(){
@@ -42,7 +48,8 @@ public class TelegramBotGoogleDrive {
             File folder_project = CreateFolder.createGoogleFolder(null, PROJECT_NAME_FOLDER);
             // Создание папки с домашними заданиями всех пользователей
             folder_hw = CreateFolder.createGoogleFolder(folder_project.getId(), HOMEWORK_DIRECTORY);
-            System.out.println(folder_hw);
+
+//            System.out.println(folder_hw);
         } catch (IOException e) {
             e.printStackTrace();
         }
