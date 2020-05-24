@@ -34,7 +34,6 @@ public class TelegramBotGoogleDrive {
     File folder_hw;
     File folder_student;
 
-    public static final Logger LOGGER = LoggerFactory.getLogger(TelegramBotGoogleDrive.class);
 
 
     public TelegramBotGoogleDrive(){
