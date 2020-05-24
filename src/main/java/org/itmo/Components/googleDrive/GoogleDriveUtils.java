@@ -12,6 +12,7 @@ import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.client.util.store.FileDataStoreFactory;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.DriveScopes;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.io.*;
 import java.util.Collections;
@@ -19,12 +20,14 @@ import java.util.List;
 
 public class GoogleDriveUtils {
     private static final String APPLICATION_NAME = "Google Drive API Java Quickstart";
+    @Value("${credentialsFolderPath}")
+    public static String credentialsFolderPath;
 
     private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
 
     // Каталог для хранения учетных данных пользователя для этого приложения.
     private static final File CREDENTIALS_FOLDER //
-            = new File("/Users/markgurianov/Desktop/TelegramBotVebinar/src/main", "resources");
+            = new File(credentialsFolderPath, "resources");
 
     private static final String CLIENT_SECRET_FILE_NAME = "client_secret.json";
 
@@ -42,7 +45,7 @@ public class GoogleDriveUtils {
 
     private static Drive _driveService;
 
-    static {
+    {
         try {
             HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
             DATA_STORE_FACTORY = new FileDataStoreFactory(CREDENTIALS_FOLDER);

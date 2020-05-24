@@ -2,12 +2,16 @@ package org.itmo.Components.googleDrive;
 
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.model.Permission;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.itmo.Components.googleSheet.BotGoogleSheet;
 
 import java.io.IOException;
 
 public class SendPermission {
+    public static final Logger LOGGER = LoggerFactory.getLogger(SendPermission.class);
+
     //    константа с почтой спикера(проверяющего)
     @Value("${SpeakerMail}")
     private String SpeakerMail;
@@ -31,6 +35,7 @@ public class SendPermission {
         newPermission.setEmailAddress(googleEmail);
 
         Drive driveService = GoogleDriveUtils.getDriveService();
+        LOGGER.info("Спикеру предоставлен доступ к {}", googleFileId);
         return driveService.permissions().create(googleFileId, newPermission).execute();
     }
 
@@ -48,6 +53,7 @@ public class SendPermission {
         newPermission.setEmailAddress(googleEmail);
 
         Drive driveService = GoogleDriveUtils.getDriveService();
+        LOGGER.info("Студенту предоставлен доступ к {}", googleFileId);
         return driveService.permissions().create(googleFileId, newPermission).execute();
     }
 }

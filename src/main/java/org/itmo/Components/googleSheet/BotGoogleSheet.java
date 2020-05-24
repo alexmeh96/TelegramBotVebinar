@@ -11,6 +11,9 @@ import com.google.api.client.util.store.FileDataStoreFactory;
 import com.google.api.services.sheets.v4.Sheets;
 import com.google.api.services.sheets.v4.SheetsScopes;
 import com.google.api.services.sheets.v4.model.ValueRange;
+import org.itmo.Components.googleDrive.TelegramBotGoogleDrive;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -24,6 +27,8 @@ import java.util.regex.Pattern;
 
 @Component
 public class BotGoogleSheet {
+
+    public static final Logger LOGGER = LoggerFactory.getLogger(BotGoogleSheet.class);
 
     @Value("${uploadPath}")
     private String uploadPath;
@@ -55,6 +60,7 @@ public class BotGoogleSheet {
         Credential credential = new AuthorizationCodeInstalledApp(
                 flow, new LocalServerReceiver())
                 .authorize("user");
+        LOGGER.info("Авторизация Google Sheet прошла успешно!");
         return credential;
     }
 
@@ -82,10 +88,8 @@ public class BotGoogleSheet {
     private String correctUsername(String text){
         Pattern pattern = Pattern.compile("[A-Za-z0-9_]{1,}");
         Matcher matcher = pattern.matcher(text);
-        System.out.println("correctUsername " +text);
         while (matcher.find()) {
             String tx = text.substring(matcher.start(), matcher.end());
-            System.out.println("while " + tx);
             return tx;
         }
         return text;
@@ -104,7 +108,7 @@ public class BotGoogleSheet {
         }
 
         if (values == null || values.isEmpty()){
-            System.out.println("No data found");
+            LOGGER. warn("Имя не было найдено");
         } else {
             for (List row : values){
                 String name = correctUsername((String) row.get(4));
@@ -112,6 +116,7 @@ public class BotGoogleSheet {
 
                     String username_sheets = (String) row.get(0);
 
+                    LOGGER.info("Имя {} было найдено", username_sheets);
 
                     return username_sheets;
                 }
@@ -126,10 +131,11 @@ public class BotGoogleSheet {
         List<List<Object>> values = value();
 
         if (values == null || values.isEmpty()){
-            System.out.println("No data found");
+            LOGGER.warn("Пароль {} не был найден", telegram_username);
         } else {
             for (List row : values){
                 if (row.get(4).equals(telegram_username)){
+                    LOGGER.info("{} успешно запросил пароль", (String) row.get(0));
                     return (String)row.get(2);
                 }
 
@@ -143,10 +149,11 @@ public class BotGoogleSheet {
         List<List<Object>> values = value();
 
         if (values == null || values.isEmpty()){
-            System.out.println("No data found");
+            LOGGER.warn("Почта {} не была найдена", telegram_username);
         } else {
             for (List row : values){
                 if (row.get(4).equals(telegram_username)){
+                    LOGGER.info("{} успешно запросил почту", (String) row.get(0));
                     return (String)row.get(1);
                 }
 

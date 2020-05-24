@@ -2,6 +2,8 @@ package org.itmo.Components.googleDrive;
 
 import com.google.api.services.drive.model.File;
 import com.google.api.services.drive.model.FileList;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -13,6 +15,8 @@ import java.util.List;
 
 @Component
 public class TelegramBotGoogleDrive {
+    public static final Logger LOGGER = LoggerFactory.getLogger(TelegramBotGoogleDrive.class);
+
     // Параметры
     @Value("${projectName}")
     public String PROJECT_NAME_FOLDER;
@@ -42,9 +46,11 @@ public class TelegramBotGoogleDrive {
             File folder_project = CreateFolder.createGoogleFolder(null, PROJECT_NAME_FOLDER);
             // Создание папки с домашними заданиями всех пользователей
             folder_hw = CreateFolder.createGoogleFolder(folder_project.getId(), HOMEWORK_DIRECTORY);
-            System.out.println(folder_hw);
+            LOGGER.info("Создание папки проекта {}", HOMEWORK_DIRECTORY);
+//            System.out.println(folder_hw);
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.trace("Ошибка создания папки проекта {}", (Object) e.getStackTrace());
+//            e.printStackTrace();
         }
     }
 
@@ -56,8 +62,10 @@ public class TelegramBotGoogleDrive {
         //else
         try {
             folder_student = CreateFolder.createGoogleFolder(folder_hw.getId(), username);
+            LOGGER.info("Создание папки с дз для {}", username);
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.trace("Ошибка создания папки с дз для {}: {}", username,  e.getStackTrace());
+//            e.printStackTrace();
         }
         return folder_student;
     }
@@ -70,11 +78,14 @@ public class TelegramBotGoogleDrive {
         try {
             ////System.getProperty("user.home")+
             googleFile = CreateHWFile.createGoogleFile(folder_student.getId(), CheckTypeDoc.CheckType(fileName), NEW_NAME_FILE, inputStream);
+            LOGGER.info("Добавлен файл с дз {}", fileName);
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.trace("Ошибка добавления файла с дз {}: {}", fileName,  e.getStackTrace());
+//            e.printStackTrace();
         }
         // Отправить пользователю
-        return "Ссылка для просмотра: " + googleFile.getWebViewLink();
+        return "Домашнее задание было успешно отправлено!\n" +
+                "Ссылка для просмотра: " + googleFile.getWebViewLink();
 
     }
     // Поиск папки студента
@@ -87,11 +98,13 @@ public class TelegramBotGoogleDrive {
 
             List<File> rootGoogleFolders = GetSubFoldersByName.getGoogleSubFolderByName(GetSubFoldersByName.FOLDER_PARENT_ID, NEW_NAME_FILE);
             for (File folder : rootGoogleFolders) {
-                System.out.println("Folder ID: " + folder.getId() + " --- Name: " + folder.getName());
+                LOGGER.info("Папка с дз {} была найдена", folder.getName());
+//                System.out.println("Folder ID: " + folder.getId() + " --- Name: " + folder.getName());
             }
 
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.trace("Ошибка поиска папки с дз: {}", (Object) e.getStackTrace());
+//            e.printStackTrace();
         }
         return false;
     }
@@ -105,14 +118,15 @@ public class TelegramBotGoogleDrive {
         List<File> rootGoogleFolders = FindFilesByName.getGoogleFilesByName("Ивент1_текст");
         for (File file : rootGoogleFolders) {
             IventID = file.getId();
-            System.out.println("Mime Type: " + file.getMimeType() + " --- Name: " + file.getName());
+            LOGGER.info("Файл {} сообщения(ивент) был найден", file.getName());
         }
         String fileId = IventID;
 
         // Получение текста из гугл документа
         OutputStream outputStream = new ByteArrayOutputStream();
-        GoogleDriveUtils.getDriveService().files().export(fileId, "text/plain")
+        GoogleDriveUtils.getDriveService().files().export(fileId, CheckTypeDoc.CheckType(fileId))
                 .executeMediaAndDownloadTo(outputStream);
+        LOGGER.info("Файл готов к отправке");
         System.out.println(outputStream.toString());
         // поиск папка
 //        String pageToken = null;

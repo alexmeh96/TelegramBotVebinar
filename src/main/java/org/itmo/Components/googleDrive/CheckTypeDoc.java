@@ -1,9 +1,14 @@
 package org.itmo.Components.googleDrive;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 
 // Проверка расширения файла(для загрузки на гугл диск
 public class CheckTypeDoc {
+    public static final Logger LOGGER = LoggerFactory.getLogger(TelegramBotGoogleDrive.class);
+
     // вытаскиваем расширение
     private static String getFileExtension(String fileName) {
         // если в имени файла есть точка и она не является первым символом в названии файла
@@ -36,7 +41,8 @@ public class CheckTypeDoc {
             case "png":
                 return "image/png";
             default:
-                throw new IllegalStateException("Unexpected value: " + getFileExtension(fileName));
+                LOGGER.error("Ошибка определения типа файла {}: {}", fileName, getFileExtension(fileName));
+                throw new IllegalStateException("Ошибка типа: " + getFileExtension(fileName));
         }
     }
 }

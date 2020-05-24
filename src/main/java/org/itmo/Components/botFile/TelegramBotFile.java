@@ -1,6 +1,9 @@
 package org.itmo.Components.botFile;
 
+import org.itmo.Components.googleDrive.TelegramBotGoogleDrive;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -12,6 +15,8 @@ import java.net.URL;
 
 @Component
 public class TelegramBotFile {
+
+    public static final Logger LOGGER = LoggerFactory.getLogger(TelegramBotFile.class);
 
     @Value("${botToken}")
     private String token;
@@ -33,11 +38,12 @@ public class TelegramBotFile {
 
             inputStream = new URL(FILE_PATH_URL + file_path).openStream();
 
-
+            LOGGER.info("Получено тело сообщения(ивента) {}", file_name);
             System.out.println(inputStream);
 
         }catch (Exception e){
-            e.printStackTrace();
+            LOGGER.trace("Ошибка получения тела сообщения(ивента){} : {}", file_name, e.getStackTrace());
+//            e.printStackTrace();
         }
 
         return inputStream;

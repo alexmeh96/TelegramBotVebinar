@@ -8,6 +8,8 @@ import org.itmo.Components.googleDrive.TelegramBotGoogleDrive;
 import org.itmo.Components.googleSheet.BotGoogleSheet;
 import org.itmo.Components.model.User;
 import org.itmo.Components.model.UsersTelegramBot;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -22,6 +24,7 @@ import java.io.InputStream;
 //обработка сообщения
 @Component
 public class TelegramFacade {
+    public static final Logger LOGGER = LoggerFactory.getLogger(TelegramFacade.class);
 
     private BotState botState;
 
@@ -88,7 +91,8 @@ public class TelegramFacade {
 
         switch (botState){
             case START:
-                System.out.println(username);
+                LOGGER.info("Активность от {}", username);
+//                System.out.println(username);
 
                 //проверка ранее подключенных пользователей
                 if(!usersTelegramBot.getUserMap().containsKey(username)){
@@ -104,7 +108,8 @@ public class TelegramFacade {
 
                         usersTelegramBot.getUserMap().put(username, new User(username, usernameSheet, folderDirectory));
 
-                        System.out.println(username + " = " + usersTelegramBot.getUserMap().get(username));
+                        LOGGER.info("Новый пользователь {} = {}", username, usersTelegramBot.getUserMap().get(username));
+//                        System.out.println(username + " = " + usersTelegramBot.getUserMap().get(username));
 
                     }else {
 
@@ -119,7 +124,8 @@ public class TelegramFacade {
                     MainMenu mainMenu = new MainMenu();
                     sendMessage = mainMenu.getMainMenuMessage(chat_id, message);
 
-                    System.out.println(username + " = " + usersTelegramBot.getUserMap().get(username));
+                    LOGGER.info("Существующий пользователь {} = {}", username, usersTelegramBot.getUserMap().get(username));
+//                    System.out.println(username + " = " + usersTelegramBot.getUserMap().get(username));
                 }
 
                 break;
@@ -163,20 +169,23 @@ public class TelegramFacade {
             case ASK_SEND_FILE:
                 username = update.getMessage().getFrom().getUserName();
 
-                System.out.println(username + " = " + usersTelegramBot.getUserMap().get(username));
+                LOGGER.info("Запрос отправки дз от пользователя {} = {}", username, usersTelegramBot.getUserMap().get(username));
+//                System.out.println(username + " = " + usersTelegramBot.getUserMap().get(username));
 
 
                 if(usersTelegramBot.getUserMap().containsKey(username) && usersTelegramBot.getUserMap().get(username).isSendHomework()){
                     String fileId = update.getMessage().getDocument().getFileId();
                     String fileName = update.getMessage().getDocument().getFileName();
                     File userFolder = usersTelegramBot.getUserMap().get(username).getUserDirectory();
-                    System.out.println("fileId = " +fileId);
+                    LOGGER.info("ID файла с дз пользователя {} = {}", username, fileId);
+//                    System.out.println("fileId = " +fileId);
 
                     try (InputStream inputStream = telegramBotFile.uploadUserFile(fileName, fileId)){
                         String text = telegramBotGoogleDrive.sendHomework(inputStream, fileName, userFolder);
                         sendMessage.setText(text);
                     }catch (Exception e){
-                        e.printStackTrace();
+                        LOGGER.trace("Ошибка загрузки файла({}) с дз: {}", fileId, e.getStackTrace());
+//                        e.printStackTrace();
                     }
 
 
