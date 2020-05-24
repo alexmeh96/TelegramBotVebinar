@@ -8,7 +8,7 @@ import org.telegram.telegrambots.bots.DefaultBotOptions;
 import org.telegram.telegrambots.meta.ApiContext;
 
 @Configuration
-//@ConfigurationProperties(prefix = "telegrambot")
+@ConfigurationProperties(prefix = "telegrambot")
 public class TelegramBotConfig {
     private String webHookPath;
     private String botUserName;
@@ -21,16 +21,16 @@ public class TelegramBotConfig {
     @Bean
     public MainTelegramBot MySuperTelegramBot() {
 
-//        DefaultBotOptions options = ApiContext
-//                .getInstance(DefaultBotOptions.class);
-//
-//        options.setProxyHost(proxyHost);
-//        options.setProxyPort(proxyPort);
-//        options.setProxyType(proxyType);
-//
-//        MainTelegramBot mySuperTelegramBot = new MainTelegramBot(options);
+        DefaultBotOptions options = ApiContext
+                .getInstance(DefaultBotOptions.class);
 
-        MainTelegramBot mySuperTelegramBot = new MainTelegramBot();
+        options.setProxyHost(proxyHost);
+        options.setProxyPort(proxyPort);
+        options.setProxyType(proxyType);
+//
+        MainTelegramBot mySuperTelegramBot = new MainTelegramBot(options);
+
+     //   MainTelegramBot mySuperTelegramBot = new MainTelegramBot();
         mySuperTelegramBot.setBotUserName(botUserName);
         mySuperTelegramBot.setBotToken(botToken);
         mySuperTelegramBot.setWebHookPath(webHookPath);

@@ -14,13 +14,13 @@ import java.util.List;
 @Component
 public class TelegramBotGoogleDrive {
     // Параметры
-    @Value("${projectName}")
-    public String PROJECT_NAME_FOLDER;
+  //  @Value("${projectName}")
+    public String PROJECT_NAME_FOLDER = "Проект 1";
 
     public final String NEW_NAME_FILE = "дз1";
 
-    @Value("${HWDirectory}")
-    public String HOMEWORK_DIRECTORY;
+   // @Value("${HWDirectory}")
+    public String HOMEWORK_DIRECTORY = "Домашнее задание";
 
     public  String IventID;
 
@@ -30,8 +30,7 @@ public class TelegramBotGoogleDrive {
 
 
     public TelegramBotGoogleDrive(){
-        //folder_hw.setId("1k5GimVe3Hn5M3P4SUfGFEdWwjPsG-mKL");
-        //folder_hw.setName("Папка с дз");
+
         deploy();
     }
 
