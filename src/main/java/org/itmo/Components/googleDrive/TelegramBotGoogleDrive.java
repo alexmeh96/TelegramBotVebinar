@@ -2,6 +2,7 @@ package org.itmo.Components.googleDrive;
 
 import com.google.api.services.drive.model.File;
 import com.google.api.services.drive.model.FileList;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -13,6 +14,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
 
+
+@Slf4j
 @Component
 public class TelegramBotGoogleDrive {
     public static final Logger LOGGER = LoggerFactory.getLogger(TelegramBotGoogleDrive.class);
@@ -31,6 +34,7 @@ public class TelegramBotGoogleDrive {
     File folder_hw;
     File folder_student;
 
+    public static final Logger LOGGER = LoggerFactory.getLogger(TelegramBotGoogleDrive.class);
 
 
     public TelegramBotGoogleDrive(){
