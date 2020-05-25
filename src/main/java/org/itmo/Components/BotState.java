@@ -3,6 +3,7 @@ package org.itmo.Components;
 
 public enum BotState {
     START,
+    ADMIN_BOT,
     ASK_SEND_HOMEWORK,
     ASK_SUPPORT,
     ASK_PASSWORD,

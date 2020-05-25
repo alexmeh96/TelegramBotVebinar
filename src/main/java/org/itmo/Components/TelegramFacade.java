@@ -8,16 +8,20 @@ import org.itmo.Components.googleDrive.TelegramBotGoogleDrive;
 import org.itmo.Components.googleSheet.BotGoogleSheet;
 import org.itmo.Components.model.User;
 import org.itmo.Components.model.UsersTelegramBot;
+import org.itmo.MainTelegramBot;
+import org.itmo.service.TelegramBotAdmin;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.telegram.telegrambots.meta.api.methods.send.SendDocument;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardRemove;
+import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
+import java.io.IOException;
 import java.io.InputStream;
-
-
-
+import java.util.List;
+import java.util.Map;
 
 //обработка сообщения
 @Component
@@ -25,6 +29,10 @@ public class TelegramFacade {
 
     private BotState botState;
 
+    @Autowired
+    TelegramBotAdmin telegramBotAdmin;
+    @Autowired
+    MainTelegramBot mainTelegramBot;
     @Autowired
     BotGoogleSheet botGoogleSheet;
     @Autowired
@@ -42,6 +50,9 @@ public class TelegramFacade {
 
         String text = update.getMessage().getText();
 
+        if(telegramBotAdmin.getActivate())
+            botState = BotState.ADMIN_BOT;
+
         if (update.getMessage().getDocument() != null){
             botState = BotState.ASK_SEND_FILE;
         }
@@ -49,6 +60,9 @@ public class TelegramFacade {
             switch (text) {
                 case "/start":
                     botState = BotState.START;
+                    break;
+                case "/admin":
+                    botState = BotState.ADMIN_BOT;
                     break;
                 case "тех поддержка":
                     botState = BotState.ASK_SUPPORT;
@@ -93,16 +107,17 @@ public class TelegramFacade {
                 //проверка ранее подключенных пользователей
                 if(!usersTelegramBot.getUserMap().containsKey(username)){
 
-                    String usernameSheet = botGoogleSheet.findUser(username);
+                    Map<String, String> userData = botGoogleSheet.findUser(username);
 
-                    if(usernameSheet != null){
-                        String message = botMessage.welcomeMessage(usernameSheet);
+
+                    if(userData != null){
+                        String message = botMessage.welcomeMessage(userData.get("nameSheet"));
                         MainMenu mainMenu = new MainMenu();
                         sendMessage = mainMenu.getMainMenuMessage(chat_id, message);
 
-                        File folderDirectory = telegramBotGoogleDrive.activate(usernameSheet);
-
-                        usersTelegramBot.getUserMap().put(username, new User(username, usernameSheet, folderDirectory));
+                        File folderDirectory = telegramBotGoogleDrive.activate(userData.get("nameSheet"));
+                        boolean isAdmin = userData.containsKey("role");
+                        usersTelegramBot.getUserMap().put(username, new User(username, userData.get("nameSheet"), folderDirectory, isAdmin));
 
                         System.out.println(username + " = " + usersTelegramBot.getUserMap().get(username));
 
@@ -179,29 +194,43 @@ public class TelegramFacade {
                         e.printStackTrace();
                     }
 
-
                     usersTelegramBot.getUserMap().get(username).setSendHomework(false);
 
                     System.out.println("Домашнее задание отправлено!");
                 }
                 break;
             case ASK_PASSWORD:
-                if(usersTelegramBot.getUserMap().containsKey(username) && usersTelegramBot.getUserMap().get(username).isSendHomework()){
+                if(usersTelegramBot.getUserMap().containsKey(username)){
                     usersTelegramBot.getUserMap().get(username).setSendHomework(false);
-                }
-                sendMessage.setChatId(chat_id);
-                sendMessage.setText("в разработке");
+                    String password = botGoogleSheet.returnPass(username);
+                    sendMessage.setText(password);
+                }else
+                    sendMessage.setText("Извините, но я вас не понимаю");
+
+                break;
+            case ADMIN_BOT:
+
                 break;
             case ANOTHER:
                 if(usersTelegramBot.getUserMap().containsKey(username) && usersTelegramBot.getUserMap().get(username).isSendHomework()){
                     usersTelegramBot.getUserMap().get(username).setSendHomework(false);
                 }
+                try(InputStream inputStream = telegramBotGoogleDrive.downloadFile()) {
+                    SendDocument sendDocument = new SendDocument();
+                    sendDocument.setChatId(chat_id);
+                    sendDocument.setDocument("дз1",inputStream);
+                    mainTelegramBot.execute(sendDocument);
+                    System.out.println("");
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (TelegramApiException e) {
+                    e.printStackTrace();
+                }
+
                 sendMessage.setChatId(chat_id);
                 sendMessage.setText("Извините, но я вас не понимаю");
                 break;
-
         }
-
 
         return sendMessage;
     }

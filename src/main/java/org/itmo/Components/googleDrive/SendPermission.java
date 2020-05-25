@@ -13,7 +13,9 @@ public class SendPermission {
     private String SpeakerMail;
     BotGoogleSheet sheet = new BotGoogleSheet();
     public String GOOGLE_SPEAKER_EMAIL = SpeakerMail;
-    public static String GOOGLE_STUDENT_EMAIL = "mark.gurianov@gmail.com";
+    public static String GOOGLE_STUDENT_EMAIL = "";
+
+
 
 
     // Даём доступ

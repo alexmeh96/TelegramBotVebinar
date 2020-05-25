@@ -18,7 +18,9 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -67,9 +69,33 @@ public class BotGoogleSheet {
                 .build();
     }
 
-    private List value() throws Exception {
+    private List mainTable() throws Exception {
         Sheets sheetsService = getSheetsService();
-        String range = "LeadsFromTilda!A2:E400";
+        String range = "LeadsFromTilda!A2:M400";
+
+        ValueRange response = sheetsService.spreadsheets().values()
+                .get(SPREADSHEET_ID, range)
+                .execute();
+
+        List<List<Object>> values = response.getValues();
+        return values;
+    }
+
+    private List adminTable() throws Exception {
+        Sheets sheetsService = getSheetsService();
+        String range = "Admin!A2:B400";
+
+        ValueRange response = sheetsService.spreadsheets().values()
+                .get(SPREADSHEET_ID, range)
+                .execute();
+
+        List<List<Object>> values = response.getValues();
+        return values;
+    }
+
+    private List cashTable() throws Exception {
+        Sheets sheetsService = getSheetsService();
+        String range = "Cash!A2:B400";
 
         ValueRange response = sheetsService.spreadsheets().values()
                 .get(SPREADSHEET_ID, range)
@@ -82,23 +108,64 @@ public class BotGoogleSheet {
     private String correctUsername(String text){
         Pattern pattern = Pattern.compile("[A-Za-z0-9_]{1,}");
         Matcher matcher = pattern.matcher(text);
-        System.out.println("correctUsername " +text);
         while (matcher.find()) {
             String tx = text.substring(matcher.start(), matcher.end());
-            System.out.println("while " + tx);
+
             return tx;
         }
         return text;
     }
 
     //Возвращае usernameSheet
-    public String findUser(String username) {
+    public Map<String, String> findUser(String username) {
 
+        Map<String, String> userData = new HashMap<>();
 
+        List<List<Object>> mainTableList = null;
+        List<List<Object>> adminTableList = null;
+        List<List<Object>> cashTableList = null;
+        try {
+            mainTableList = mainTable();
+            adminTableList = adminTable();
+            cashTableList = cashTable();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        if (mainTableList == null || mainTableList.isEmpty()){
+            System.out.println("No data found");
+        } else {
+            for (List row : mainTableList){
+                String name = correctUsername((String) row.get(4));
+                if (name.equals(username)){
+                    userData.put("nameSheet", (String) row.get(0));
+
+                    break;
+                }
+
+            }
+        }
+
+        if (adminTableList == null || adminTableList.isEmpty()){
+            System.out.println("No data found");
+        } else {
+            for (List row : adminTableList){
+                String name = correctUsername((String) row.get(0));
+                if (name.equals(username)){
+                    userData.put("role", "admin");
+                    break;
+                }
+
+            }
+        }
+        return userData;
+    }
+
+    public String returnPass(String telegram_username)  {
 
         List<List<Object>> values = null;
         try {
-            values = value();
+            values = mainTable();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -108,28 +175,8 @@ public class BotGoogleSheet {
         } else {
             for (List row : values){
                 String name = correctUsername((String) row.get(4));
-                if (name.equals(username)){
 
-                    String username_sheets = (String) row.get(0);
-
-
-                    return username_sheets;
-                }
-
-            }
-        }
-        return null;
-    }
-
-    public String returnPass(String telegram_username) throws Exception {
-
-        List<List<Object>> values = value();
-
-        if (values == null || values.isEmpty()){
-            System.out.println("No data found");
-        } else {
-            for (List row : values){
-                if (row.get(4).equals(telegram_username)){
+                if (name.equals(telegram_username)){
                     return (String)row.get(2);
                 }
 
@@ -140,7 +187,7 @@ public class BotGoogleSheet {
 
     public String returnMail(String telegram_username) throws Exception {
 
-        List<List<Object>> values = value();
+        List<List<Object>> values = mainTable();
 
         if (values == null || values.isEmpty()){
             System.out.println("No data found");
@@ -152,6 +199,7 @@ public class BotGoogleSheet {
 
             }
         }
-        return "Возникла ошибка, обратитесь к администратору " + botAdmin;
+        System.out.println("Возникла ошибка, обратитесь к администратору " + botAdmin);
+        return null;
     }
 }

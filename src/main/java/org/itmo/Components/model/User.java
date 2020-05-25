@@ -4,6 +4,7 @@ import com.google.api.services.drive.model.File;
 
 public class User {
 
+    private boolean admin;
     private String username;
     private String usernameSheet;
     private boolean sendHomework;
@@ -11,11 +12,23 @@ public class User {
 
     public User(){}
 
-    public User(String username, String usernameSheet, File file) {
+    public User(String username, String usernameSheet, File file, boolean admin) {
         this.username = username;
         this.usernameSheet = usernameSheet;
         this.userDirectory = file;
         this.sendHomework = false;
+        this.admin = admin;
+    }
+
+    public boolean isAdmin() {
+        return admin;
+    }
+
+    public void setAdmin(String role) {
+        if (role != null && role.equals("admin"))
+            this.admin = true;
+        else
+            this.admin = false;
     }
 
     public String getUsername() {
@@ -53,9 +66,11 @@ public class User {
     @Override
     public String toString() {
         return "User{" +
-                "username='" + username + '\'' +
+                "admin=" + admin +
+                ", username='" + username + '\'' +
                 ", usernameSheet='" + usernameSheet + '\'' +
                 ", sendHomework=" + sendHomework +
+                ", userDirectory=" + userDirectory +
                 '}';
     }
 }
