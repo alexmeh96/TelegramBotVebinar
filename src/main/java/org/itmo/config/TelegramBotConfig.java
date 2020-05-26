@@ -21,16 +21,16 @@ public class TelegramBotConfig {
     @Bean
     public MainTelegramBot MySuperTelegramBot() {
 
-        DefaultBotOptions options = ApiContext
-                .getInstance(DefaultBotOptions.class);
-
-        options.setProxyHost(proxyHost);
-        options.setProxyPort(proxyPort);
-        options.setProxyType(proxyType);
+//        DefaultBotOptions options = ApiContext
+//                .getInstance(DefaultBotOptions.class);
 //
-        MainTelegramBot mySuperTelegramBot = new MainTelegramBot(options);
+//        options.setProxyHost(proxyHost);
+//        options.setProxyPort(proxyPort);
+//        options.setProxyType(proxyType);
+//
+//        MainTelegramBot mySuperTelegramBot = new MainTelegramBot(options);
 
-     //   MainTelegramBot mySuperTelegramBot = new MainTelegramBot();
+        MainTelegramBot mySuperTelegramBot = new MainTelegramBot();
         mySuperTelegramBot.setBotUserName(botUserName);
         mySuperTelegramBot.setBotToken(botToken);
         mySuperTelegramBot.setWebHookPath(webHookPath);

@@ -2,33 +2,30 @@ package org.itmo.Components.model;
 
 import com.google.api.services.drive.model.File;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class User {
 
-    private boolean admin;
+    private Long chatId;
     private String username;
     private String usernameSheet;
     private boolean sendHomework;
+    private boolean askQuestion;
     private File userDirectory;
+    private String numFile;
+
+    private List<String> listQuestion = new ArrayList<>();
 
     public User(){}
 
-    public User(String username, String usernameSheet, File file, boolean admin) {
+    public User(Long chatId, String username, String usernameSheet, File file) {
+        this.chatId = chatId;
         this.username = username;
         this.usernameSheet = usernameSheet;
         this.userDirectory = file;
         this.sendHomework = false;
-        this.admin = admin;
-    }
-
-    public boolean isAdmin() {
-        return admin;
-    }
-
-    public void setAdmin(String role) {
-        if (role != null && role.equals("admin"))
-            this.admin = true;
-        else
-            this.admin = false;
+        this.askQuestion = false;
     }
 
     public String getUsername() {
@@ -63,14 +60,49 @@ public class User {
         this.userDirectory = userDirectory;
     }
 
+    public Long getChatId() {
+        return chatId;
+    }
+
+    public void setChatId(Long chatId) {
+        this.chatId = chatId;
+    }
+
+    public String getNumFile() {
+        return numFile;
+    }
+
+    public void setNumFile(String numFile) {
+        this.numFile = numFile;
+    }
+
+    public boolean isAskQuestion() {
+        return askQuestion;
+    }
+
+    public void setAskQuestion(boolean askQuestion) {
+        this.askQuestion = askQuestion;
+    }
+
+    public List<String> getListQuestion() {
+        return listQuestion;
+    }
+
+    public void setListQuestion(List<String> listQuestion) {
+        this.listQuestion = listQuestion;
+    }
+
     @Override
     public String toString() {
         return "User{" +
-                "admin=" + admin +
+                "chatId=" + chatId +
                 ", username='" + username + '\'' +
                 ", usernameSheet='" + usernameSheet + '\'' +
                 ", sendHomework=" + sendHomework +
+                ", askQuestion=" + askQuestion +
                 ", userDirectory=" + userDirectory +
+                ", numFile='" + numFile + '\'' +
+                ", listQuestion=" + listQuestion +
                 '}';
     }
 }

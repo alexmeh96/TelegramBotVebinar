@@ -15,8 +15,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.security.GeneralSecurityException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -27,16 +29,22 @@ import java.util.regex.Pattern;
 @Component
 public class BotGoogleSheet {
 
-    @Value("${uploadPath}")
-    private String uploadPath;
+    //@Value("${uploadPath}")
+    private String uploadPath = "/home/alex/work/java/Projects/TelegramBotVebinar/src/main/resources/";
 
-    @Value("${googleSheet}")
-    private String SPREADSHEET_ID;
+   // @Value("${googleSheet}")
+    private String SPREADSHEET_ID = "1wOOgK2KK6OE7tmLPsJR-_Jt_sBVfCtD0Qk-n1CqZpbc";
 
     @Value("${botAdmin}")
     private String botAdmin;
 
     private final String APPLICATION_NAME = "Google Sheet";
+
+    private Sheets sheetsService;
+
+    public BotGoogleSheet(){
+        sheetsService = getSheetsService();
+    }
 
 
     private Credential authorize() throws Exception {
@@ -60,17 +68,24 @@ public class BotGoogleSheet {
         return credential;
     }
 
-    private Sheets getSheetsService() throws Exception {
-        Credential credential = authorize();
-        return new Sheets.Builder(
-                GoogleNetHttpTransport.newTrustedTransport(),
-                JacksonFactory.getDefaultInstance(), credential)
-                .setApplicationName(APPLICATION_NAME)
-                .build();
+    private Sheets getSheetsService(){
+        Sheets sheets = null;
+        try {
+            Credential credential = authorize();
+             sheets = new Sheets.Builder(
+                    GoogleNetHttpTransport.newTrustedTransport(),
+                    JacksonFactory.getDefaultInstance(), credential)
+                    .setApplicationName(APPLICATION_NAME)
+                    .build();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return sheets;
     }
 
     private List mainTable() throws Exception {
-        Sheets sheetsService = getSheetsService();
+
         String range = "LeadsFromTilda!A2:M400";
 
         ValueRange response = sheetsService.spreadsheets().values()
@@ -82,7 +97,6 @@ public class BotGoogleSheet {
     }
 
     private List adminTable() throws Exception {
-        Sheets sheetsService = getSheetsService();
         String range = "Admin!A2:B400";
 
         ValueRange response = sheetsService.spreadsheets().values()
@@ -94,7 +108,6 @@ public class BotGoogleSheet {
     }
 
     private List cashTable() throws Exception {
-        Sheets sheetsService = getSheetsService();
         String range = "Cash!A2:B400";
 
         ValueRange response = sheetsService.spreadsheets().values()
@@ -116,17 +129,39 @@ public class BotGoogleSheet {
         return text;
     }
 
+    public boolean findAdminTable(String username){
+        List<List<Object>> adminTableList = null;
+        try {
+            adminTableList = adminTable();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        if (adminTableList == null || adminTableList.isEmpty()){
+            System.out.println("No data found");
+        } else {
+            for (List row : adminTableList){
+                String name = correctUsername((String) row.get(0));
+                if (name.equals(username)){
+                    return true;
+                }
+
+            }
+        }
+        return false;
+    }
+
+
     //Возвращае usernameSheet
     public Map<String, String> findUser(String username) {
 
         Map<String, String> userData = new HashMap<>();
 
         List<List<Object>> mainTableList = null;
-        List<List<Object>> adminTableList = null;
+
         List<List<Object>> cashTableList = null;
         try {
             mainTableList = mainTable();
-            adminTableList = adminTable();
             cashTableList = cashTable();
         } catch (Exception e) {
             e.printStackTrace();
@@ -146,18 +181,7 @@ public class BotGoogleSheet {
             }
         }
 
-        if (adminTableList == null || adminTableList.isEmpty()){
-            System.out.println("No data found");
-        } else {
-            for (List row : adminTableList){
-                String name = correctUsername((String) row.get(0));
-                if (name.equals(username)){
-                    userData.put("role", "admin");
-                    break;
-                }
 
-            }
-        }
         return userData;
     }
 

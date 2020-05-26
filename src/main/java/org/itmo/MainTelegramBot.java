@@ -8,6 +8,9 @@ import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 public class MainTelegramBot extends TelegramWebhookBot {
     private String webHookPath;
     private String botUserName;
@@ -25,6 +28,8 @@ public class MainTelegramBot extends TelegramWebhookBot {
 
     @Override
     public BotApiMethod<?> onWebhookUpdateReceived(Update update) {
+
+
         SendMessage sendMessage = null;
         try {
             sendMessage = telegramFacade.createAnswer(update);

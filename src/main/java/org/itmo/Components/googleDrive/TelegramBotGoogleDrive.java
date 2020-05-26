@@ -11,9 +11,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 @Component
 public class TelegramBotGoogleDrive {
@@ -23,22 +21,33 @@ public class TelegramBotGoogleDrive {
 
     public final String NEW_NAME_FILE = "дз1";
 
+    public final String HW = "HW";
+
    // @Value("${HWDirectory}")
     public String HOMEWORK_DIRECTORY = "Домашнее задание";
 
     public static String MainID, HWID, HW_day, fileid;
 
-    File folder_hw;
-    File folder_student;
-    File folder_project;
-
-
+    private File folder_hw;
+    private File folder_student;
+    private File folder_project;
+    private File folderHW;
+    private Map<String, File> fileMapHW = new HashMap<>();;
 
     public TelegramBotGoogleDrive(){
         //deploy();
         folder_project = findFolder(PROJECT_NAME_FOLDER, null);
         folder_hw = findFolder(HOMEWORK_DIRECTORY, folder_project);
+        folderHW = findFolder(HW, folder_project);
 
+        fileMapHW.put("HW_1", findFolder("HW_1",folderHW));
+//        fileMapHW.put("HW_2", findFolder("HW_2",folderHW));
+//        fileMapHW.put("HW_3", findFolder("HW_3",folderHW));
+
+    }
+
+    public Map<String, File> getFileMapHW() {
+        return fileMapHW;
     }
 
     //-------------------------------------ЗАПУСК ОДИН РАЗ СРАЗУ ПОСЛЕ ДЕПЛОЯ -------------------------
@@ -65,13 +74,13 @@ public class TelegramBotGoogleDrive {
     }
 
     // -----------------ЗАПУСК КАЖДЫЙ РАЗ ПОСЛЕ АКТИВАЦИИ КНОПКИ "Отправить дз -> Дз1" -----------------
-    public String sendHomework(InputStream inputStream, String fileName, File folder_student) {
+    public String sendHomework(InputStream inputStream, String fileName, String newFileName, File folder_student) {
         System.out.println("sendHomework");
         // Создание файлов с дз
         File googleFile = null;
         try {
             ////System.getProperty("user.home")+
-            googleFile = CreateHWFile.createGoogleFile(folder_student.getId(), CheckTypeDoc.CheckType(fileName), NEW_NAME_FILE, inputStream);
+            googleFile = CreateHWFile.createGoogleFile(folder_student.getId(), CheckTypeDoc.CheckType(fileName), newFileName, inputStream);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -79,24 +88,7 @@ public class TelegramBotGoogleDrive {
         return "Ссылка для просмотра: " + googleFile.getWebViewLink();
 
     }
-    // Поиск папки студента
-    public boolean findDirectory(String userNameSheet){
-        try {
-            List<File> rootGoogleParentFolders = GetSubFoldersByName.getGoogleRootFoldersByName(PROJECT_NAME_FOLDER);
-            for (File folder : rootGoogleParentFolders) {
-                GetSubFoldersByName.FOLDER_PARENT_ID = folder.getId();
-            }
 
-            List<File> rootGoogleFolders = GetSubFoldersByName.getGoogleSubFolderByName(GetSubFoldersByName.FOLDER_PARENT_ID, NEW_NAME_FILE);
-            for (File folder : rootGoogleFolders) {
-                System.out.println("Folder ID: " + folder.getId() + " --- Name: " + folder.getName());
-            }
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
 
     public File findFolder(String fileName, File folderSearch){
         try {
@@ -173,10 +165,36 @@ public class TelegramBotGoogleDrive {
         }
     }
 
+    public String getFileId(String ParentsID) throws IOException {
+        String fileNameLike = "HW_video";
+        String type = "video/mp4";
+        Drive driveService = GoogleDriveUtils.getDriveService();
+
+        String pageToken = null;
+        List<File> list = new ArrayList<File>();
+
+        String query = " name contains '" + fileNameLike + "' " +
+                " '" + ParentsID + "' in parents " //
+                + " and mimeType != '"+ type + "' ";
+
+        do {
+            FileList result = driveService.files().list().setQ(query).setSpaces("drive") //
+                    // Fields will be assigned values: id, name, createdTime, mimeType
+                    .setFields("nextPageToken, files(id, name, createdTime, mimeType)")//
+                    .setPageToken(pageToken).execute();
+            for (File file : result.getFiles()) {
+                list.add(file);
+            }
+            pageToken = result.getNextPageToken();
+        } while (pageToken != null);
+
+        return list.get(0).getId();
+    }
 
 
 
-    public InputStream downloadFile() throws IOException {
+
+    public InputStream downloadFile(String nameFolder) throws IOException {
 
         // Поиск файла с новостью(создавал его для теста)
 //        List<File> mainGoogleFolders = GetSubFoldersByName.getGoogleRootFoldersByName("Проект 1");
@@ -200,16 +218,18 @@ public class TelegramBotGoogleDrive {
 
         File file = hw_file_GoogleFolders.get(0);
         File video = hw_video_GoogleFolders.get(0);
-        System.out.println(hw_video_GoogleFolders);
+
         System.out.println(video);
+
+
         // video/mp4
-        HttpResponse httpResponse = GoogleDriveUtils.getDriveService().files()
-                                        .export(file.getId(), "text/plain")
-                                        .executeMedia();
+//        HttpResponse httpResponse = GoogleDriveUtils.getDriveService().files()
+//                                        .export(file.getId(), "text/plain")
+//                                        .executeMedia();
         InputStream inputStream = null;
-        if (null != httpResponse)
-            inputStream = httpResponse.getContent();
-            
+//        if (null != httpResponse)
+//            inputStream = httpResponse.getContent();
+//
         return inputStream;
 
 
