@@ -15,7 +15,7 @@ public class User {
     private File userDirectory;
     private String numFile;
 
-    private List<String> listQuestion = new ArrayList<>();
+    private List<QuestionUser> listQuestion = new ArrayList<>();
 
     public User(){}
 
@@ -84,11 +84,11 @@ public class User {
         this.askQuestion = askQuestion;
     }
 
-    public List<String> getListQuestion() {
+    public List<QuestionUser> getListQuestion() {
         return listQuestion;
     }
 
-    public void setListQuestion(List<String> listQuestion) {
+    public void setListQuestion(List<QuestionUser> listQuestion) {
         this.listQuestion = listQuestion;
     }
 
