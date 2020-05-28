@@ -63,18 +63,19 @@ public class TelegramBotGoogleDrive {
     }
 
     // -----------------ЗАПУСК КАЖДЫЙ РАЗ ПОСЛЕ АКТИВАЦИИ КНОПКИ "Отправить дз -> Дз1" -----------------
-    public String sendHomework(InputStream inputStream, String fileName, String newFileName, File folder_student) {
+    public boolean sendHomework(InputStream inputStream, String fileName, String newFileName, File folder_student) {
         System.out.println("sendHomework");
         // Создание файлов с дз
         File googleFile = null;
         try {
             ////System.getProperty("user.home")+
             googleFile = CreateHWFile.createGoogleFile(folder_student.getId(), CheckTypeDoc.CheckType(fileName), newFileName, inputStream);
+            return true;
         } catch (IOException e) {
             e.printStackTrace();
         }
         // Отправить пользователю
-        return "Ссылка для просмотра: " + googleFile.getWebViewLink();
+        return false;
 
     }
 

@@ -181,7 +181,19 @@ public class BotGoogleSheet {
             }
         }
 
+        if (cashTableList == null || cashTableList.isEmpty()){
+            System.out.println("No data found");
+        } else {
+            for (List row : cashTableList){
+                String name = correctUsername((String) row.get(0));
+                if (name.equals(username)){
+                    userData.put("cash", (String) row.get(1));
 
+                    break;
+                }
+
+            }
+        }
         return userData;
     }
 

@@ -74,4 +74,19 @@ public class BotMessage {
 
         return text.toString();
     }
+
+    public String cashFoHW(TelegramUsers telegramUsers, User user, Date date){
+        String num = user.getNumFile();
+        Date firstDate = new Date(date.getTime()-40_000l);
+        if(telegramUsers.getMapDate().containsKey(num) && firstDate.before(telegramUsers.getMapDate().get(num))){
+            user.setCash(user.getCash() + 10);
+            return "Ваше домашнее задание отправлено вовремя!\nВы получаете плюс 10 баллов!";
+        }
+        return "Ваше домашнее задание отправлено!";
+    }
+
+    public String topUsers(TelegramUsers telegramUsers){
+        
+        return "";
+    }
 }

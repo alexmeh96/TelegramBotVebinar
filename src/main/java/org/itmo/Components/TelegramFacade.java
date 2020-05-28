@@ -29,8 +29,6 @@ import java.util.Map;
 @Component
 public class TelegramFacade {
 
-    private BotState botState;
-
     @Autowired
     MainTelegramBot mainTelegramBot;
     @Autowired
@@ -45,6 +43,7 @@ public class TelegramFacade {
     TelegramBotFile telegramBotFile;
     @Autowired
     TelegramButton telegramButton;
+
 
     public SendMessage createAnswer(Update update){
 
@@ -69,18 +68,26 @@ public class TelegramFacade {
 
 
                 try (InputStream inputStream = telegramBotFile.uploadUserFile(fileName, fileId)){
-                    String text = telegramBotGoogleDrive.sendHomework(
+                    boolean res = telegramBotGoogleDrive.sendHomework(
                             inputStream,
                             fileName,
                             "дз" + telegramUsers.getUserMap().get(username).getNumFile(),
                             userFolder);
-                    sendMessage.setText(text);
+                    if(res)
+                        sendMessage.setText(botMessage.cashFoHW(telegramUsers,
+                                                                telegramUsers.getUserMap().get(username),
+                                                                new Date(update.getMessage().getDate()*1000l)));
+                    else{
+                        sendMessage.setText("не удалось отправить домашнее задание!");
+                    }
                 }catch (Exception e){
                     e.printStackTrace();
                 }
 
                 telegramUsers.getUserMap().get(username).setSendHomework(false);
                 telegramUsers.getUserMap().get(username).setAskQuestion(false);
+
+
 
                 System.out.println("Домашнее задание отправлено!");
             }
@@ -119,7 +126,7 @@ public class TelegramFacade {
 
                             File folderDirectory = telegramBotGoogleDrive.activate(userData.get("nameSheet"));
 
-                            telegramUsers.getUserMap().put(username, new User(chat_id, username, userData.get("nameSheet"), folderDirectory));
+                            telegramUsers.getUserMap().put(username, new User(chat_id, username, userData.get("nameSheet"), folderDirectory, Integer.parseInt(userData.get("cash"))));
 
                             System.out.println(username + " = " + telegramUsers.getUserMap().get(username));
 
@@ -180,9 +187,13 @@ public class TelegramFacade {
                     stringList = new ArrayList<>();
                     stringList.add("Отправить дз");
                     stringList.add("Тех поддержка");
+                    stringList.add("Топ студентов");
                     stringList.add("Пароль от личного кабинета");
                     telegramButton.setButtonList(stringList);
                     sendMessage = telegramButton.getMainMenuMessage(chat_id, "Меню");
+                    break;
+                case "Топ студентов":
+
                     break;
                 case "Отправить дз":
                     stringList = new ArrayList<>();
@@ -261,9 +272,11 @@ public class TelegramFacade {
                             String fileId = telegramBotGoogleDrive.getFileVideoId(telegramBotGoogleDrive.getFileMapHW().get("HW_"+num).getId());
                             sendVideo.setCaption(telegramBotGoogleDrive.getTextHW(telegramBotGoogleDrive.getFileMapHW().get("HW_"+num).getId()));
                             sendVideo.setVideo("https://drive.google.com/uc?id=" + fileId + "&authuser=1&export=download");
+
+                            telegramUsers.getMapDate().put(num, new Date(update.getMessage().getDate()*1000l));
+
                             for (User user : telegramUsers.getUserMap().values()) {
                                 sendVideo.setChatId(user.getChatId());
-
                                 mainTelegramBot.execute(sendVideo);
                             }
                         } catch (IOException | TelegramApiException e) {

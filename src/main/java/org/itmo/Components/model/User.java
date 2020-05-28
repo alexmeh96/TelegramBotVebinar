@@ -14,18 +14,20 @@ public class User {
     private boolean askQuestion;
     private File userDirectory;
     private String numFile;
+    private Integer cash;
 
     private List<QuestionUser> listQuestion = new ArrayList<>();
 
     public User(){}
 
-    public User(Long chatId, String username, String usernameSheet, File file) {
+    public User(Long chatId, String username, String usernameSheet, File file, Integer cash) {
         this.chatId = chatId;
         this.username = username;
         this.usernameSheet = usernameSheet;
         this.userDirectory = file;
         this.sendHomework = false;
         this.askQuestion = false;
+        this.cash = cash;
     }
 
     public String getUsername() {
@@ -92,6 +94,14 @@ public class User {
         this.listQuestion = listQuestion;
     }
 
+    public Integer getCash() {
+        return cash;
+    }
+
+    public void setCash(Integer cash) {
+        this.cash = cash;
+    }
+
     @Override
     public String toString() {
         return "User{" +
@@ -102,6 +112,7 @@ public class User {
                 ", askQuestion=" + askQuestion +
                 ", userDirectory=" + userDirectory +
                 ", numFile='" + numFile + '\'' +
+                ", cash=" + cash +
                 ", listQuestion=" + listQuestion +
                 '}';
     }

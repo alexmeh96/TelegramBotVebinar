@@ -2,13 +2,12 @@ package org.itmo.Components.model;
 
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Component
 public class TelegramUsers {
+
+    private Map<String, Date> mapDate = new HashMap<>();
 
     private Map<String, User> userMap= new HashMap<>();
 
@@ -28,5 +27,13 @@ public class TelegramUsers {
 
     public void setAdminList(List<String> adminList) {
         this.adminList = adminList;
+    }
+
+    public Map<String, Date> getMapDate() {
+        return mapDate;
+    }
+
+    public void setMapDate(Map<String, Date> mapDate) {
+        this.mapDate = mapDate;
     }
 }
