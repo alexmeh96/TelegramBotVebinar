@@ -27,11 +27,8 @@ public class BotMessage {
     }
 
     public String welcomeMessage(String usernameSheets) {
-        return "Привет, " + usernameSheets + "! Я бот помощник.\n" +
-                " - буду держать вас в курсе всех  ивентов вебинара\n" +
-                " - отправлю и проверю ваше дз\n" +
-                " - если есть вопросы помогу связаться с администратором или спикером" +
-                " - напомню ваш пароль";
+        return "Привет, " + usernameSheets + "! Я - твой бот-помощник в игре \"Метод Плесовских\". \n" +
+                "Я 24/7 на связи, поэтому ты в любой момент можете обратиться ко мне со своим вопросом.";
 
     }
 
@@ -70,17 +67,17 @@ public class BotMessage {
         }
 
         if(text.toString().isEmpty())
-            text.append("спмсок вопросов пуст!");
+            text.append("Список вопросов пуст!");
 
         return text.toString();
     }
 
     public String cashFoHW(TelegramUsers telegramUsers, User user, Date date){
         String num = user.getNumFile();
-        Date firstDate = new Date(date.getTime()-40_000l);
+        Date firstDate = new Date(date.getTime()- 40_000l);
         if(telegramUsers.getMapDate().containsKey(num) && firstDate.before(telegramUsers.getMapDate().get(num))){
             user.setCash(user.getCash() + 10);
-            return "Ваше домашнее задание отправлено вовремя!\nВы получаете плюс 10 баллов!";
+            return "Ваше домашнее задание отправлено вовремя!\nВы получаете 10 баллов!";
         }
         return "Ваше домашнее задание отправлено!";
     }

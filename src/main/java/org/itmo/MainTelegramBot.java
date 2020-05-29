@@ -1,6 +1,8 @@
 package org.itmo;
 
+import lombok.extern.slf4j.Slf4j;
 import org.itmo.Components.TelegramFacade;
+import org.itmo.Components.googleSheet.BotGoogleSheet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.telegram.telegrambots.bots.DefaultBotOptions;
 import org.telegram.telegrambots.bots.TelegramWebhookBot;
@@ -11,7 +13,11 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+@SuppressWarnings("ALL")
+@Slf4j
 public class MainTelegramBot extends TelegramWebhookBot {
+    private static final org.apache.logging.log4j.Logger log = org.apache.logging.log4j.LogManager.getLogger(MainTelegramBot.class);
+
     private String webHookPath;
     private String botUserName;
     private String botToken;
@@ -32,9 +38,11 @@ public class MainTelegramBot extends TelegramWebhookBot {
 
         SendMessage sendMessage = null;
         try {
+            log.info("Сборка сообщения для отправки");
             sendMessage = telegramFacade.createAnswer(update);
         } catch (Exception e) {
-            e.printStackTrace();
+            log.trace("Ошибка сборки сообщения: {}", e.getStackTrace());
+//            e.printStackTrace();
         }
 
 

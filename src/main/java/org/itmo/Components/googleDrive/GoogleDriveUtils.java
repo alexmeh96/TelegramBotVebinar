@@ -12,19 +12,26 @@ import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.client.util.store.FileDataStoreFactory;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.DriveScopes;
+import lombok.extern.slf4j.Slf4j;
+import org.itmo.Components.googleSheet.BotGoogleSheet;
 
 import java.io.*;
 import java.util.Collections;
 import java.util.List;
 
+@SuppressWarnings("ALL")
+@Slf4j
 public class GoogleDriveUtils {
+
+    private static final org.apache.logging.log4j.Logger log = org.apache.logging.log4j.LogManager.getLogger(BotGoogleSheet.class);
+
     private static final String APPLICATION_NAME = "Google Drive API Java Quickstart";
 
     private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
 
     // Каталог для хранения учетных данных пользователя для этого приложения.
     private static final File CREDENTIALS_FOLDER //
-            = new File("/home/alex/work/java/Projects/TelegramBotVebinar/src/main", "resources");
+            = new File("/Users/markgurianov/Desktop/TelegramBotVebinar/src/main", "resources");
 
     private static final String CLIENT_SECRET_FILE_NAME = "client_secret.json";
 
@@ -46,7 +53,10 @@ public class GoogleDriveUtils {
         try {
             HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
             DATA_STORE_FACTORY = new FileDataStoreFactory(CREDENTIALS_FOLDER);
+
+            log.info("Успешное подключение к GoogleDrive");
         } catch (Throwable t) {
+            log.error("Ошибка подключения к GoogleDrive : {}", t.getStackTrace());
             t.printStackTrace();
             System.exit(1);
         }

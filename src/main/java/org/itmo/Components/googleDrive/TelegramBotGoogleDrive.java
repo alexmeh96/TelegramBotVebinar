@@ -4,6 +4,8 @@ import com.google.api.client.http.HttpResponse;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.model.File;
 import com.google.api.services.drive.model.FileList;
+import lombok.extern.slf4j.Slf4j;
+import org.itmo.Components.googleSheet.BotGoogleSheet;
 import org.springframework.stereotype.Component;
 
 import java.io.ByteArrayOutputStream;
@@ -12,8 +14,12 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.*;
 
+@SuppressWarnings("ALL")
+@Slf4j
 @Component
 public class TelegramBotGoogleDrive {
+
+    private static final org.apache.logging.log4j.Logger log = org.apache.logging.log4j.LogManager.getLogger(TelegramBotGoogleDrive.class);
 
     public static String MainID, HWID, HW_day, fileid;
 
@@ -44,11 +50,15 @@ public class TelegramBotGoogleDrive {
         try {
             // Создание папки проекта
             File folder_project = CreateFolder.createGoogleFolder(null, "Проект 1");
+            log.info("Создана папка проекта: {}", folder_project);
+
             // Создание папки с домашними заданиями всех пользователей
             studentsFolderHW = CreateFolder.createGoogleFolder(folder_project.getId(), "Домашнее задание");
-            System.out.println(studentsFolderHW);
+            log.info("Создана папка для домашних заданий: {}", studentsFolderHW);
+//            System.out.println(studentsFolderHW);
         } catch (IOException e) {
-            e.printStackTrace();
+            log.trace("Ошибка создания основных папок в Google Drive: {}", e.getStackTrace());
+//            e.printStackTrace();
         }
     }
 
@@ -56,23 +66,28 @@ public class TelegramBotGoogleDrive {
     public File activate(String username) {
         try {
             studentFolder = CreateFolder.createGoogleFolder(studentsFolderHW.getId(), username);
+            log.info("Создана папка для дз студента {} : {}", username, studentsFolderHW);
         } catch (IOException e) {
-            e.printStackTrace();
+            log.trace("Ошибка создания папки с дз студента {} : {}", username, e.getStackTrace());
+//            e.printStackTrace();
         }
         return studentFolder;
     }
 
     // -----------------ЗАПУСК КАЖДЫЙ РАЗ ПОСЛЕ АКТИВАЦИИ КНОПКИ "Отправить дз -> Дз1" -----------------
     public boolean sendHomework(InputStream inputStream, String fileName, String newFileName, File folder_student) {
-        System.out.println("sendHomework");
+        log.info("Отправка домашнего задани {}",folder_student.getName());
+//        System.out.println("sendHomework");
         // Создание файлов с дз
         File googleFile = null;
         try {
             ////System.getProperty("user.home")+
+            log.info("В папку студента загружен файл с дз");
             googleFile = CreateHWFile.createGoogleFile(folder_student.getId(), CheckTypeDoc.CheckType(fileName), newFileName, inputStream);
             return true;
         } catch (IOException e) {
-            e.printStackTrace();
+            log.trace("Ошибка загрузки файла с дз: {}", e.getStackTrace());
+//            e.printStackTrace();
         }
         // Отправить пользователю
         return false;
@@ -89,7 +104,8 @@ public class TelegramBotGoogleDrive {
                 fileList = GetSubFoldersByName.getGoogleSubFolderByName(folderSearch.getId(), fileName);
             return fileList.get(0);
         } catch (IOException e) {
-            e.printStackTrace();
+            log.trace("Ошибка поиска папки {} : {}", fileName, e.getStackTrace());
+//            e.printStackTrace();
         }
         return null;
     }
@@ -98,10 +114,12 @@ public class TelegramBotGoogleDrive {
         String fileId = file.getId();
         OutputStream outputStream = new ByteArrayOutputStream();
         try {
+            log.info("Успешный экспорт {}  в OutputStream", file.getName());
             GoogleDriveUtils.getDriveService().files().export(fileId, CheckTypeDoc.CheckType(file.getName()))
                     .executeMediaAndDownloadTo(outputStream);
         } catch (IOException e) {
-            e.printStackTrace();
+            log.trace("Ошибка экспорта {}  в OutputStream: {}", file.getName(), e.getStackTrace());
+//            e.printStackTrace();
         }
 
         try {
@@ -155,10 +173,15 @@ public class TelegramBotGoogleDrive {
         }
     }
 
-    public String getFileVideoId(String ParentsID) throws IOException {
+    public String getFileVideoId(String ParentsID){
         String fileNameLike = "HW_video.mp4";
         String type = "video/mp4";
-        Drive driveService = GoogleDriveUtils.getDriveService();
+        Drive driveService = null;
+        try {
+            driveService = GoogleDriveUtils.getDriveService();
+        } catch (IOException e) {
+            log.trace("Ошибка подключения driveService : {}", e.getStackTrace());
+        }
 
         String pageToken = null;
         List<File> list = new ArrayList<File>();
@@ -169,12 +192,18 @@ public class TelegramBotGoogleDrive {
 
 
         do {
-            FileList result = driveService.files().list()
-                    .setQ(query)
-                    .setSpaces("drive") //
-                    // Fields will be assigned values: id, name, createdTime, mimeType
-                    .setFields("nextPageToken, files(id, name, createdTime, mimeType)")//
-                    .setPageToken(pageToken).execute();//!!!!!!
+            FileList result = null;//!!!!!!
+            try {
+                result = driveService.files().list()
+                        .setQ(query)
+                        .setSpaces("drive") //
+                        // Fields will be assigned values: id, name, createdTime, mimeType
+                        .setFields("nextPageToken, files(id, name, createdTime, mimeType)")//
+                        .setPageToken(pageToken).execute();
+            } catch (IOException e) {
+                log.trace("Не найден {} : {}", fileNameLike, e.getStackTrace());
+//                e.printStackTrace();
+            }
             System.out.println(result);
             for (File file : result.getFiles()) {
                 list.add(file);
@@ -193,7 +222,7 @@ public class TelegramBotGoogleDrive {
         try {
             driveService = GoogleDriveUtils.getDriveService();
         } catch (IOException e) {
-            e.printStackTrace();
+            log.trace("Ошибка подключения driveService : {}", e.getStackTrace());
         }
 
         String pageToken = null;
@@ -212,7 +241,8 @@ public class TelegramBotGoogleDrive {
                         .setFields("nextPageToken, files(id, name, createdTime, mimeType)")//
                         .setPageToken(pageToken).execute();
             } catch (IOException e) {
-                e.printStackTrace();
+                log.trace("Не найден {} : {}", fileNameLike, e.getStackTrace());
+//                e.printStackTrace();
             }
             System.out.println(result);
             for (File file : result.getFiles()) {
@@ -226,9 +256,11 @@ public class TelegramBotGoogleDrive {
             GoogleDriveUtils.getDriveService().files().export(list.get(0).getId(), "text/plain")
                     .executeMediaAndDownloadTo(outputStream);
         } catch (IOException e) {
-            e.printStackTrace();
+            log.trace("Ошибка получения текста дз для рассылки : {}", e.getStackTrace());
+//            e.printStackTrace();
         }
-        System.out.println(outputStream.toString());
+        log.info("Текст сообщения из рассылки дз : \n {}", outputStream.toString());
+//        System.out.println(outputStream.toString());
 
 
         return outputStream.toString();
@@ -237,7 +269,7 @@ public class TelegramBotGoogleDrive {
 
 
 
-    public InputStream downloadFile(String nameFolder) throws IOException {
+    public InputStream downloadFile(String nameFolder) {
 
         // Поиск файла с новостью(создавал его для теста)
 //        List<File> mainGoogleFolders = GetSubFoldersByName.getGoogleRootFoldersByName("Проект 1");
@@ -256,16 +288,32 @@ public class TelegramBotGoogleDrive {
 //            HW_day = folder.getId();
 //        }
 
-        List<File> hw_file_GoogleFolders = FindFilesByName.getGoogleFilesByName("HW_text");
-        List<File> hw_video_GoogleFolders = FindFilesByName.getGoogleFilesByName("HW_video");
+        List<File> hw_file_GoogleFolders = null;
+        try {
+            hw_file_GoogleFolders = FindFilesByName.getGoogleFilesByName("HW_text");
+            log.info("Получен текст сообщения из рассылки дз");
+        } catch (IOException e) {
+            log.info("Ошибка получения текста сообщения из рассылки дз : {}", e.getStackTrace());
+//            e.printStackTrace();
+        }
+        List<File> hw_video_GoogleFolders = null;
+        try {
+            hw_video_GoogleFolders = FindFilesByName.getGoogleFilesByName("HW_video");
+            log.info("Получено видео сообщения из рассылки дз");
+        } catch (IOException e) {
+            log.info("Ошибка получения видео сообщения из рассылки дз : {}", e.getStackTrace());
+//            e.printStackTrace();
+        }
 
         File file = hw_file_GoogleFolders.get(0);
         File video = hw_video_GoogleFolders.get(0);
 
-        System.out.println(video);
-
-        GoogleDriveUtils.getDriveService().files()
-                                        .export(file.getId(), "text/plain");
+        try {
+            GoogleDriveUtils.getDriveService().files()
+                                            .export(file.getId(), "text/plain");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
         // video/mp4
 //        HttpResponse httpResponse = GoogleDriveUtils.getDriveService().files()
