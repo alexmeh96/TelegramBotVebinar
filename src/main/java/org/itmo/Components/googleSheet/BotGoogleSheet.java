@@ -34,7 +34,7 @@ import java.util.regex.Pattern;
 public class BotGoogleSheet {
     private static final org.apache.logging.log4j.Logger log = org.apache.logging.log4j.LogManager.getLogger(BotGoogleSheet.class);
     //@Value("${uploadPath}")
-    private String uploadPath = "/Users/markgurianov/Desktop/TelegramBotVebinar/src/main/resources/";
+    private String uploadPath = "/home/alex/work/java/Projects/TelegramBotVebinar/src/main/resources/";
 
    // @Value("${googleSheet}")
     private String SPREADSHEET_ID = "1wOOgK2KK6OE7tmLPsJR-_Jt_sBVfCtD0Qk-n1CqZpbc";

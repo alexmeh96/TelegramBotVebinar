@@ -36,8 +36,8 @@ public class TelegramBotGoogleDrive {
         folderHW = findFolder("HW", projectFolder);
 
         fileMapHW.put("HW_1", findFolder("HW_1", folderHW));
-//        fileMapHW.put("HW_2", findFolder("HW_2",folderHW));
-//        fileMapHW.put("HW_3", findFolder("HW_3",folderHW));
+        fileMapHW.put("HW_2", findFolder("HW_2",folderHW));
+        fileMapHW.put("HW_3", findFolder("HW_3",folderHW));
 
     }
 

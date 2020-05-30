@@ -8,6 +8,7 @@ import org.telegram.telegrambots.bots.DefaultBotOptions;
 import org.telegram.telegrambots.bots.TelegramWebhookBot;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
 import java.text.SimpleDateFormat;
@@ -36,13 +37,14 @@ public class MainTelegramBot extends TelegramWebhookBot {
     public BotApiMethod<?> onWebhookUpdateReceived(Update update) {
 
 
-        SendMessage sendMessage = null;
+
+        BotApiMethod<?> sendMessage = null;
         try {
             log.info("Сборка сообщения для отправки");
             sendMessage = telegramFacade.createAnswer(update);
         } catch (Exception e) {
-            log.trace("Ошибка сборки сообщения: {}", e.getStackTrace());
-//            e.printStackTrace();
+            //log.trace("Ошибка сборки сообщения: {}", e.getStackTrace());
+            e.printStackTrace();
         }
 
 

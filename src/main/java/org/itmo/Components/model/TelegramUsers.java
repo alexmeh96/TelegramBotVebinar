@@ -11,7 +11,7 @@ public class TelegramUsers {
 
     private Map<String, User> userMap= new HashMap<>();
 
-    private List<String> adminList = new ArrayList<>();
+    private Map<String, Admin> adminMap= new HashMap<>();
 
     public Map<String, User> getUserMap() {
         return userMap;
@@ -21,19 +21,19 @@ public class TelegramUsers {
         this.userMap = userList;
     }
 
-    public List<String> getAdminList() {
-        return adminList;
-    }
-
-    public void setAdminList(List<String> adminList) {
-        this.adminList = adminList;
-    }
-
     public Map<String, Date> getMapDate() {
         return mapDate;
     }
 
     public void setMapDate(Map<String, Date> mapDate) {
         this.mapDate = mapDate;
+    }
+
+    public Map<String, Admin> getAdminMap() {
+        return adminMap;
+    }
+
+    public void setAdminMap(Map<String, Admin> adminMap) {
+        this.adminMap = adminMap;
     }
 }
