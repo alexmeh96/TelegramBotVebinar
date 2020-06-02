@@ -5,6 +5,7 @@ public class Admin {
     private boolean uploadText;
     private boolean uploadVideo;
     private boolean uploadPhoto;
+    private String HW;
     private String text;
 
     public Admin(String name){
@@ -13,6 +14,7 @@ public class Admin {
         uploadText = false;
         uploadVideo = false;
         uploadPhoto = false;
+        HW = "";
     }
 
     public void uploadFalse(){
@@ -20,6 +22,7 @@ public class Admin {
         uploadText=false;
         uploadVideo=false;
         uploadPhoto=false;
+        HW = "";
     }
 
     public String getName() {
@@ -60,5 +63,13 @@ public class Admin {
 
     public void setText(String text) {
         this.text = text;
+    }
+
+    public String getHW() {
+        return HW;
+    }
+
+    public void setHW(String HW) {
+        this.HW = HW;
     }
 }

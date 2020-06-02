@@ -39,7 +39,7 @@ public class BotMessage {
 
     public String questionList(TelegramUsers telegramUsers, Date date){
         //Date firstDate = new Date(date.getTime() - 172_800_000L);
-        Date firstDate = new Date(date.getTime() - 20_000L);
+        Date firstDate = new Date(date.getTime() - 40_000L);
 
         StringBuilder text = new StringBuilder();
         for (User user : telegramUsers.getUserMap().values()) {
@@ -72,9 +72,9 @@ public class BotMessage {
         return text.toString();
     }
 
-    public String cashFoHW(TelegramUsers telegramUsers, User user, Date date){
+    public String cashHW(TelegramUsers telegramUsers, User user, Date date){
         String num = user.getNumFile();
-        Date firstDate = new Date(date.getTime()- 40_000l);
+        Date firstDate = new Date(date.getTime()- 60_000l);
         if(telegramUsers.getMapDate().containsKey(num) && firstDate.before(telegramUsers.getMapDate().get(num))){
             user.setCash(user.getCash() + 10);
             return "Ваше домашнее задание отправлено вовремя!\nВы получаете 10 баллов!";

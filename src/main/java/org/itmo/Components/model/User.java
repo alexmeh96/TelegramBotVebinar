@@ -1,10 +1,14 @@
 package org.itmo.Components.model;
 
 import com.google.api.services.drive.model.File;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@Getter
+@Setter
 public class User {
 
     private Long chatId;

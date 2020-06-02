@@ -6,6 +6,8 @@ import com.google.api.client.extensions.jetty.auth.oauth2.LocalServerReceiver;
 import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow;
 import com.google.api.client.googleapis.auth.oauth2.GoogleClientSecrets;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
+import com.google.api.client.http.javanet.NetHttpTransport;
+import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.client.util.store.FileDataStoreFactory;
 import com.google.api.services.sheets.v4.Sheets;
@@ -16,15 +18,9 @@ import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.security.GeneralSecurityException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -42,14 +38,16 @@ public class BotGoogleSheet {
     @Value("${botAdmin}")
     private String botAdmin;
 
-    private final String APPLICATION_NAME = "Google Sheet";
+    private static final String APPLICATION_NAME = "Google Sheet";
 
-    private Sheets sheetsService;
+    public static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
+    private static final String TOKENS_DIRECTORY_PATH = "tokens";
 
-    public BotGoogleSheet(){
-        sheetsService = getSheetsService();
-    }
-
+//    public BotGoogleSheet(){
+//        sheetsService = getSheetsService();
+//    }
+    private static final List<String> SCOPES = Collections.singletonList(SheetsScopes.SPREADSHEETS_READONLY);
+    private static final String CREDENTIALS_FILE_PATH = "/credentials.json";
 
     private Credential authorize() throws Exception {
 //        InputStream in = Main.class.getResourceAsStream("credentials.json");
@@ -72,22 +70,45 @@ public class BotGoogleSheet {
         return credential;
     }
 
-    private Sheets getSheetsService(){
-        Sheets sheets = null;
-        try {
-            Credential credential = authorize();
-             sheets = new Sheets.Builder(
-                    GoogleNetHttpTransport.newTrustedTransport(),
-                    JacksonFactory.getDefaultInstance(), credential)
-                    .setApplicationName(APPLICATION_NAME)
-                    .build();
-             log.info("Прошла авторицация в Google Sheet");
-        } catch (Exception e) {
-            log.trace("Не прошла авторицация в Google Sheet: {}", e.getStackTrace());
-//            e.printStackTrace();
+    private static Credential getCredentials(final NetHttpTransport HTTP_TRANSPORT) throws IOException {
+//        Sheets sheets = null;
+//        try {
+//            Credential credential = authorize();
+//             sheets = new Sheets.Builder(
+//                    GoogleNetHttpTransport.newTrustedTransport(),
+//                    JacksonFactory.getDefaultInstance(), credential)
+//                    .setApplicationName(APPLICATION_NAME)
+//                    .build();
+//             log.info("Прошла авторицация в Google Sheet");
+//        } catch (Exception e) {
+//            log.trace("Не прошла авторицация в Google Sheet: {}", e.getStackTrace());
+////            e.printStackTrace();
+//        }
+//
+//        return sheets;
+        // Load client secrets.
+        InputStream in = BotGoogleSheet.class.getResourceAsStream(CREDENTIALS_FILE_PATH);
+        if (in == null) {
+            throw new FileNotFoundException("Resource not found: " + CREDENTIALS_FILE_PATH);
         }
+        GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(JSON_FACTORY, new InputStreamReader(in));
 
-        return sheets;
+        // Build flow and trigger user authorization request.
+        GoogleAuthorizationCodeFlow flow = new GoogleAuthorizationCodeFlow.Builder(
+                HTTP_TRANSPORT, JSON_FACTORY, clientSecrets, SCOPES)
+                .setDataStoreFactory(new FileDataStoreFactory(new java.io.File(TOKENS_DIRECTORY_PATH)))
+                .setAccessType("offline")
+                .build();
+        LocalServerReceiver receiver = new LocalServerReceiver.Builder().setPort(8888).build();
+        return new AuthorizationCodeInstalledApp(flow, receiver).authorize("user");
+    }
+
+    public static Sheets ServiceApp() throws IOException, GeneralSecurityException {
+        final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
+        Sheets service = new Sheets.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT))
+                .setApplicationName(APPLICATION_NAME)
+                .build();
+        return service;
     }
 
     private List mainTable()  {
@@ -96,11 +117,11 @@ public class BotGoogleSheet {
 
         ValueRange response = null;
         try {
-            response = sheetsService.spreadsheets().values()
+            response = ServiceApp().spreadsheets().values()
                     .get(SPREADSHEET_ID, range)
                     .execute();
             log.info("Получена основная таблица пользователей");
-        } catch (IOException e) {
+        } catch (IOException | GeneralSecurityException e) {
             log.trace("Вылетела птичка, ЛОВИ ИСКЛЮЧЕНИЕ! \n {}", e.getStackTrace());
 //            e.printStackTrace();
         }
@@ -113,11 +134,11 @@ public class BotGoogleSheet {
 
         ValueRange response = null;
         try {
-            response = sheetsService.spreadsheets().values()
+            response = ServiceApp().spreadsheets().values()
                     .get(SPREADSHEET_ID, range)
                     .execute();
             log.info("Получена админская таблица пользователей");
-        } catch (IOException e) {
+        } catch (IOException | GeneralSecurityException e) {
             log.trace("Вылетела птичка, ЛОВИ ИСКЛЮЧЕНИЕ! \n {}", e.getStackTrace());
 //            e.printStackTrace();
         }
@@ -130,11 +151,11 @@ public class BotGoogleSheet {
 
         ValueRange response = null;
         try {
-            response = sheetsService.spreadsheets().values()
+            response = ServiceApp().spreadsheets().values()
                     .get(SPREADSHEET_ID, range)
                     .execute();
             log.info("Получена таблица с монетами пользователей");
-        } catch (IOException e) {
+        } catch (IOException | GeneralSecurityException e) {
             log.trace("Вылетела птичка, ЛОВИ ИСКЛЮЧЕНИЕ! \n {}", e.getStackTrace());
 //            e.printStackTrace();
         }
@@ -142,6 +163,8 @@ public class BotGoogleSheet {
         List<List<Object>> values = response.getValues();
         return values;
     }
+
+
 
     private String correctUsername(String text){
         Pattern pattern = Pattern.compile("[A-Za-z0-9_]{1,}");
@@ -256,6 +279,30 @@ public class BotGoogleSheet {
         log.warn("Ошибка запроса пароля для {}", telegram_username);
         return null;
     }
+
+
+//    public static List<List<Object>> Reader(String range) throws IOException {
+//
+//        ValueRange response = sheetsService.spreadsheets().values()
+//                .get(SPREADSHEET_ID, range)
+//                .execute();
+//
+//        List<List<Object>> values = response.getValues();
+//
+//        return values;
+//
+//    }
+//
+//    public static void Writer(String range, List<List<Object>> values) throws IOException {
+//        ValueRange appendBody = new ValueRange()
+//                .setValues(values);
+//        AppendValuesResponse appendResult = sheetsService.spreadsheets().values()
+//                .append(SPREADSHEET_ID, range, appendBody)
+//                .setValueInputOption("USER_ENTERED")
+//                .setInsertDataOption("INSERT_ROWS")
+//                .setIncludeValuesInResponse(true)
+//                .execute();
+//    }
 
     public String returnMail(String telegram_username) throws Exception {
 

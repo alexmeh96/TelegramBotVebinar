@@ -18,12 +18,14 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.api.methods.send.SendVideo;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
+import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardRemove;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.io.*;
-import java.net.URL;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.*;
 
 //обработка сообщения
@@ -74,8 +76,6 @@ public class TelegramFacade {
 
                 //проверка ранее подключенных пользователей
                 if(!telegramUsers.getUserMap().containsKey(username)){
-
-
                     Map<String, String> userData = botGoogleSheet.findUser(username);
                     if(!userData.isEmpty()){
                         String message = botMessage.welcomeMessage(userData.get("nameSheet"));
@@ -118,7 +118,7 @@ public class TelegramFacade {
                 break;
             case "Связаться со службой поддержки":
                 if(telegramUsers.getUserMap().containsKey(username) ){
-                    telegramUsers.getUserMap().get(username).setSendHomework(false);
+
                     telegramUsers.getUserMap().get(username).setAskQuestion(false);
                 }
                 List<String> stringList = new ArrayList<>();
@@ -131,21 +131,18 @@ public class TelegramFacade {
                 break;
             case "Связаться с администратором":
                 if(telegramUsers.getUserMap().containsKey(username)){
-                    telegramUsers.getUserMap().get(username).setSendHomework(false);
                     telegramUsers.getUserMap().get(username).setAskQuestion(false);
                 }
                 sendMessage.setText(botMessage.messageAdmin());
                 break;
             case "Задать вопрос ведущему":
                 if(telegramUsers.getUserMap().containsKey(username)){
-                    telegramUsers.getUserMap().get(username).setSendHomework(false);
                     telegramUsers.getUserMap().get(username).setAskQuestion(true);
                 }
                 sendMessage.setText("Введите ваш вопрос");
                 break;
             case "Назад":
                 if(telegramUsers.getUserMap().containsKey(username)){
-                    telegramUsers.getUserMap().get(username).setSendHomework(false);
                     telegramUsers.getUserMap().get(username).setAskQuestion(false);
                 }
                 stringList = new ArrayList<>();
@@ -178,7 +175,6 @@ public class TelegramFacade {
                 break;
             case "Пароль от личного кабинета":
                 if(telegramUsers.getUserMap().containsKey(username)){
-                    telegramUsers.getUserMap().get(username).setSendHomework(false);
                     telegramUsers.getUserMap().get(username).setAskQuestion(false);
                     String password = botGoogleSheet.returnPass(username);
                     sendMessage.setText(password);
@@ -206,12 +202,12 @@ public class TelegramFacade {
 
                 break;
             default:
+                //Если это пользователь и он должен отправить вопрос
                 if(telegramUsers.getUserMap().containsKey(username) && telegramUsers.getUserMap().get(username).isAskQuestion()){
                     Date date = new Date(update.getMessage().getDate()* 1000l);
 
                     String text = update.getMessage().getText();
                     telegramUsers.getUserMap().get(username).getListQuestion().add(new QuestionUser(text, date));
-                    System.out.println(text);
                     telegramUsers.getUserMap().get(username).setAskQuestion(false);
                     sendMessage.setText("Ваш вопрос отправлен!");
                     break;
@@ -223,51 +219,52 @@ public class TelegramFacade {
 
     }
 
-    private BotApiMethod<?> eventHasDocument(Update update){
+    private BotApiMethod<?> eventHasDocument(Update update) throws TelegramApiException {
 
         String username = update.getMessage().getFrom().getUserName();
 
         log.info("{} = {}", username, telegramUsers.getUserMap().get(username));
 
-        if(telegramUsers.getUserMap().containsKey(username) && telegramUsers.getUserMap().get(username).isSendHomework()){
+        //Если это пользователь и он должен отправить дз
+        if(telegramUsers.getUserMap().containsKey(username) && telegramUsers.getUserMap().get(username).isSendHomework()) {
+            User user = telegramUsers.getUserMap().get(username);
             SendMessage sendMessage = new SendMessage();
             long chat_id = update.getMessage().getChatId();
             sendMessage.setChatId(chat_id);
 
+            mainTelegramBot.execute(sendMessage.setText("домашнее задание "+ user.getNumFile() + " отправляется!"));
+
             String fileId = update.getMessage().getDocument().getFileId();
             String fileName = update.getMessage().getDocument().getFileName();
-            File userFolder = telegramUsers.getUserMap().get(username).getUserDirectory();
+            File userFolder = user.getUserDirectory();
 
-            try (InputStream inputStream = telegramBotFile.uploadUserFile(fileId)){
-                boolean res = telegramBotGoogleDrive.sendHomework(
+            boolean sendHW = false;
+            try (InputStream inputStream = telegramBotFile.uploadUserFile(fileId)) {
+                sendHW = telegramBotGoogleDrive.sendHomework(
                         inputStream,
                         fileName,
-                        "Домашнее задание " + telegramUsers.getUserMap().get(username).getNumFile(),
+                        "Домашнее задание " + user.getNumFile(),
                         userFolder);
-                if(res)
-                    sendMessage.setText(botMessage.cashFoHW(telegramUsers,
-                            telegramUsers.getUserMap().get(username),
-                            new Date(update.getMessage().getDate()*1000l)));
-                else{
-                    sendMessage.setText("Не удалось отправить домашнее задание!");
-                }
-            }catch (Exception e){
-                log.warn("Не удалось отправить домашнее задание! \n {}", e.getStackTrace());
+
+            } catch (Exception e) {
+                e.getStackTrace();
+                return sendMessage.setText("Не удалось отправить домашнее задание!");
             }
+            user.setSendHomework(false);
+            user.setAskQuestion(false);
 
-            telegramUsers.getUserMap().get(username).setSendHomework(false);
-            telegramUsers.getUserMap().get(username).setAskQuestion(false);
+            if (sendHW) return sendMessage.setText(botMessage.cashHW(telegramUsers, user, new Date(update.getMessage().getDate() * 1000l)));
 
-            log.info("Домашнее задание отправлено!");
-            return sendMessage;
-
-        }else if (telegramUsers.getAdminMap().containsKey(username)) {
+            return sendMessage.setText("Не удалось отправить домашнее задание!");
+        }
+        if (telegramUsers.getAdminMap().containsKey(username)) {
             Admin admin = telegramUsers.getAdminMap().get(username);
 
             if (admin.isUploadText()) {
 
                 SendMessage sendMessage = new SendMessage();
                 long chatId = update.getMessage().getChatId();
+                sendMessage.setChatId(chatId);
 
                 String text = null;
                 try {
@@ -275,15 +272,17 @@ public class TelegramFacade {
                 } catch (IOException e) {
                     e.printStackTrace();
                     admin.uploadFalse();
-                    return sendMessage.setChatId(chatId).setText("не удалось загрузить файл с текстом!");
+                    return sendMessage.setText("не удалось загрузить файл с текстом!");
                 }
                 if (admin.isUploadVideo()) {
                     admin.setText(text);
-                    return sendMessage.setChatId(chatId).setText("загрузите видео");
+                    if(admin.getHW().isEmpty()) return sendMessage.setText("загрузите видео");
+                    else return sendMessage.setText("загрузите видео для дз "+admin.getHW());
                 } else if (admin.isUploadPhoto()) {
                     admin.setText(text);
-                    return sendMessage.setChatId(chatId).setText("загрузите картинку");
+                    return sendMessage.setText("загрузите картинку");
                 } else {
+                    mainTelegramBot.execute(sendMessage.setText("рассылка студентам началась!"));
                     sendMessage.setText(text);
                     try {
                         for (User user : telegramUsers.getUserMap().values()) {
@@ -306,19 +305,23 @@ public class TelegramFacade {
         return null;
     }
 
-    private BotApiMethod<?> eventHasVideo(Update update){
+    private BotApiMethod<?> eventHasVideo(Update update) throws TelegramApiException {
         String username = update.getMessage().getFrom().getUserName();
         if (telegramUsers.getAdminMap().containsKey(username)) {
             Admin admin = telegramUsers.getAdminMap().get(username);
             if (admin.isUploadVideo()) {
                 SendMessage sendMessage = new SendMessage();
                 long chatId = update.getMessage().getChatId();
+                sendMessage.setChatId(chatId);
 
-                String fileId = update.getMessage().getVideo().getFileId();
-                try (InputStream inputStream = telegramBotFile.uploadUserFile(fileId)) {
+                try  {
+                    String fileId = update.getMessage().getVideo().getFileId();
+                    java.io.File file = telegramBotFile.uploadUserFile2(fileId);
                     SendVideo sendVideo = new SendVideo();
-                    sendVideo.setVideo("video", inputStream);
+                    sendVideo.setVideo(file);
                     sendVideo.setCaption(admin.getText());
+
+                    mainTelegramBot.execute(sendMessage.setText("рассылка студентам началась!"));
                     try {
                         for (User user : telegramUsers.getUserMap().values()){
                             sendVideo.setChatId(user.getChatId());
@@ -326,39 +329,56 @@ public class TelegramFacade {
                         }
                         sendVideo.setChatId(chatId);
                         mainTelegramBot.execute(sendVideo);
+                        file.delete();
                     }catch (TelegramApiException e){
                         e.printStackTrace();
                         admin.uploadFalse();
-                        return sendMessage.setChatId(chatId).setText("не удалось разослать видео с текстом!");
+                        if(admin.getHW().isEmpty()) return sendMessage.setText("не удалось разослать видео с текстом!");
+                        else return sendMessage.setText("не удалось разослать домашнее задание " + admin.getHW());
                     }
 
                 } catch (IOException e) {
                     e.printStackTrace();
                     admin.uploadFalse();
-                    return sendMessage.setChatId(chatId).setText("не удалось загрузить видео!");
+                    return sendMessage.setText("не удалось загрузить видео!");
                 }
-                admin.uploadFalse();
-                return sendMessage.setChatId(chatId).setText("текст с видео разосланы успешно!");
+                if (admin.getHW().isEmpty()) {
+                    admin.uploadFalse();
+                    return sendMessage.setText("текст с видео разосланы успешно!");
+                }
+                else {
+
+                    System.out.println(new Date(update.getMessage().getDate() * 1000l));
+
+                    telegramUsers.getMapDate().put(admin.getHW(), new Date(update.getMessage().getDate() * 1000l));
+                    admin.uploadFalse();
+                    return sendMessage.setText("домашнее задание " + admin.getHW() + "разослано успешно!");
+                }
             }
 
         }
         return null;
     }
 
-    private BotApiMethod<?> eventHasPhoto(Update update){
+    private BotApiMethod<?> eventHasPhoto(Update update) throws TelegramApiException {
         String username = update.getMessage().getFrom().getUserName();
         if (telegramUsers.getAdminMap().containsKey(username)){
             Admin admin = telegramUsers.getAdminMap().get(username);
             if (admin.isUploadPhoto()) {
                 SendMessage sendMessage = new SendMessage();
                 long chatId = update.getMessage().getChatId();
+                sendMessage.setChatId(chatId);
 
                 String fileId = update.getMessage().getPhoto().get(update.getMessage().getPhoto().size() - 1).getFileId();
-                try (InputStream inputStream = telegramBotFile.uploadUserFile(fileId)) {
+                System.out.println(update.getMessage());
+                try {
                     SendPhoto sendPhoto = new SendPhoto();
-                    sendPhoto.setPhoto("photo", inputStream);
-                    sendPhoto.setCaption(admin.getText());
+                    java.io.File file = telegramBotFile.uploadUserFile2(fileId);
 
+                    sendPhoto.setCaption(admin.getText());
+                    sendPhoto.setPhoto(file);
+
+                    mainTelegramBot.execute(sendMessage.setText("рассылка студентам началась!"));
                     try {
                         for (User user : telegramUsers.getUserMap().values()){
                             sendPhoto.setChatId(user.getChatId());
@@ -366,19 +386,21 @@ public class TelegramFacade {
                         }
                         sendPhoto.setChatId(chatId);
                         mainTelegramBot.execute(sendPhoto);
+                        file.delete();
+
                     } catch (TelegramApiException e) {
                         e.printStackTrace();
                         admin.uploadFalse();
-                        return sendMessage.setChatId(chatId).setText("не удалось разослать картинку с текстом!");
+                        return sendMessage.setText("не удалось разослать картинку с текстом!");
                     }
 
-                } catch (IOException e) {
+                } catch (Exception e) {
                     e.printStackTrace();
                     admin.uploadFalse();
-                    return sendMessage.setChatId(chatId).setText("не удалось загрузить картинку!");
+                    return sendMessage.setText("не удалось загрузить картинку!");
                 }
                 admin.uploadFalse();
-                return sendMessage.setChatId(chatId).setText("текст с фото разосланы успешно!");
+                return sendMessage.setText("текст с фото разосланы успешно!");
             }
         }
         return null;
@@ -397,55 +419,60 @@ public class TelegramFacade {
             EditMessageText editMessageText = new EditMessageText()
                     .setChatId(chatId)
                     .setMessageId(messageId);
-
+            Admin admin = telegramUsers.getAdminMap().get(username);
             if (buttonId.startsWith("hw")) {
-                String num = update.getCallbackQuery().getData().substring(2);
-
-                SendVideo sendVideo = new SendVideo();
-                String fileId = telegramBotGoogleDrive.getFileVideoId(telegramBotGoogleDrive.getFileMapHW().get("HW_" + num).getId());
-                sendVideo.setCaption(telegramBotGoogleDrive.getTextHW(telegramBotGoogleDrive.getFileMapHW().get("HW_" + num).getId()));
-                sendVideo.setVideo("https://drive.google.com/uc?id=" + fileId + "&authuser=1&export=download");
-
-               // try(InputStream inputStream = new URL("https://drive.google.com/uc?id=" + fileId + "&authuser=1&export=download").openStream();) {
-                    //sendVideo.setVideo("video", inputStream);
-                    try {
-                        for (User user : telegramUsers.getUserMap().values()) {
-                            sendVideo.setChatId(user.getChatId());
-                            mainTelegramBot.execute(sendVideo);
-                        }
-                        sendVideo.setChatId(chatId);
-                        mainTelegramBot.execute(sendVideo);
-
-                    } catch (TelegramApiException e) {
-                        e.printStackTrace();
-                        return editMessageText.setText("Не удалось выполнить рассылку дз " + num);
-
-                    }
-//                } catch (IOException e) {
-//                    e.printStackTrace();
-//                    return editMessageText.setText("Не удалось получить файлы из GoogleDriver!" + num);
+//                String num = update.getCallbackQuery().getData().substring(2);
 //
-//                }
-                telegramUsers.getMapDate().put(num, new Date(update.getCallbackQuery().getMessage().getDate() * 1000l));
-
-                return editMessageText.setText("Рассылка дз " + num + " прошла успешно!");
-
+//                SendVideo sendVideo = new SendVideo();
+//                String fileId = telegramBotGoogleDrive.getFileVideoId(telegramBotGoogleDrive.getFileMapHW().get("HW_" + num).getId());
+//                sendVideo.setCaption(telegramBotGoogleDrive.getTextHW(telegramBotGoogleDrive.getFileMapHW().get("HW_" + num).getId()));
+//                sendVideo.setVideo("https://drive.google.com/uc?id=" + fileId + "&authuser=1&export=download");
+//
+//               // try(InputStream inputStream = new URL("https://drive.google.com/uc?id=" + fileId + "&authuser=1&export=download").openStream();) {
+//                    //sendVideo.setVideo("video", inputStream);
+//                    try {
+//                        for (User user : telegramUsers.getUserMap().values()) {
+//                            sendVideo.setChatId(user.getChatId());
+//                            mainTelegramBot.execute(sendVideo);
+//                        }
+//                        sendVideo.setChatId(chatId);
+//                        mainTelegramBot.execute(sendVideo);
+//
+//                    } catch (TelegramApiException e) {
+//                        e.printStackTrace();
+//                        return editMessageText.setText("Не удалось выполнить рассылку дз " + num);
+//
+//                    }
+////                } catch (IOException e) {
+////                    e.printStackTrace();
+////                    return editMessageText.setText("Не удалось получить файлы из GoogleDriver!" + num);
+////
+////                }
+//                telegramUsers.getMapDate().put(num, new Date(update.getCallbackQuery().getMessage().getDate() * 1000l));
+//
+//                return editMessageText.setText("Рассылка дз " + num + " прошла успешно!");
+                String num = update.getCallbackQuery().getData().substring(2);
+                admin.setHW(num);
+                admin.setUploadText(true);
+                admin.setUploadVideo(true);
+                admin.setUploadPhoto(false);
+                return editMessageText.setText("Загрузите файл с текстом для дз"+ num);
             }
             switch (buttonId) {
                 case "text":
-                    telegramUsers.getAdminMap().get(username).setUploadText(true);
-                    telegramUsers.getAdminMap().get(username).setUploadVideo(false);
-                    telegramUsers.getAdminMap().get(username).setUploadPhoto(false);
+                    admin.setUploadText(true);
+                    admin.setUploadVideo(false);
+                    admin.setUploadPhoto(false);
                     return editMessageText.setText("Загрузите файл с текстом");
                 case "textVideo":
-                    telegramUsers.getAdminMap().get(username).setUploadText(true);
-                    telegramUsers.getAdminMap().get(username).setUploadVideo(true);
-                    telegramUsers.getAdminMap().get(username).setUploadPhoto(false);
+                    admin.setUploadText(true);
+                    admin.setUploadVideo(true);
+                    admin.setUploadPhoto(false);
                     return editMessageText.setText("Загрузите файл с текстом");
                 case "textImage":
-                    telegramUsers.getAdminMap().get(username).setUploadText(true);
-                    telegramUsers.getAdminMap().get(username).setUploadPhoto(true);
-                    telegramUsers.getAdminMap().get(username).setUploadVideo(false);
+                    admin.setUploadText(true);
+                    admin.setUploadPhoto(true);
+                    admin.setUploadVideo(false);
                     return editMessageText.setText("Загрузите файл с текстом");
             }
             return null;
@@ -480,14 +507,26 @@ public class TelegramFacade {
             return eventInlineButton(update);
         }
         if (update.getMessage().hasDocument()) {
-            return eventHasDocument(update);
+            try {
+                return eventHasDocument(update);
+            } catch (TelegramApiException e) {
+                e.printStackTrace();
+            }
         }
         if (update.getMessage().hasPhoto()){
-            return eventHasPhoto(update);
+            try {
+                return eventHasPhoto(update);
+            } catch (TelegramApiException e) {
+                e.printStackTrace();
+            }
         }
 
         if (update.getMessage().hasVideo()) {
-            return eventHasVideo(update);
+            try {
+                return eventHasVideo(update);
+            } catch (TelegramApiException e) {
+                e.printStackTrace();
+            }
         }
         if (update.getMessage().hasText()) {
             return eventHasText(update);
