@@ -62,17 +62,17 @@ public class TelegramFacade {
 
                 log.info("{} стартует", username);
 
-                if(botGoogleSheet.findAdminTable(username)){
-                    telegramUsers.getAdminMap().put(username, new Admin(username));
-
-                    List<String> stringList = new ArrayList<>();
-                    stringList.add("Список вопросов");
-                    stringList.add("Сделать рассылку");
-                    stringList.add("Сделать рассылку дз");
-                    telegramButton.setButtonListText(stringList);
-                    sendMessage = telegramButton.getMainMenuMessage(chatId, "Здравствуйте администратор!");
-                    break;
-                }
+//                if(botGoogleSheet.findAdminTable(username)){
+//                    telegramUsers.getAdminMap().put(username, new Admin(username));
+//
+//                    List<String> stringList = new ArrayList<>();
+//                    stringList.add("Список вопросов");
+//                    stringList.add("Сделать рассылку");
+//                    stringList.add("Сделать рассылку дз");
+//                    telegramButton.setButtonListText(stringList);
+//                    sendMessage = telegramButton.getMainMenuMessage(chatId, "Здравствуйте администратор!");
+//                    break;
+//                }
 
                 //проверка ранее подключенных пользователей
                 if(!telegramUsers.getUserMap().containsKey(username)){
@@ -84,12 +84,14 @@ public class TelegramFacade {
                         stringList.add("Отправить домашнее задание");
                         stringList.add("Связаться со службой поддержки");
                         stringList.add("Пароль от личного кабинета");
+                        stringList.add("Рейтинг студентов");
                         telegramButton.setButtonListText(stringList);
                         sendMessage = telegramButton.getMainMenuMessage(chatId, message);
 
                         File folderDirectory = telegramBotGoogleDrive.activate(userData.get("nameSheet"));
 
-                        telegramUsers.getUserMap().put(username, new User(chatId, username, userData.get("nameSheet"), folderDirectory, Integer.parseInt(userData.get("cash"))));
+                        User user = new User(chatId, username, userData.get("nameSheet"), folderDirectory, userData.get("row"));
+                        telegramUsers.getUserMap().put(username, user);
 
                         System.out.println(username + " = " + telegramUsers.getUserMap().get(username));
 
@@ -153,8 +155,8 @@ public class TelegramFacade {
                 telegramButton.setButtonListText(stringList);
                 sendMessage = telegramButton.getMainMenuMessage(chatId, "Меню");
                 break;
-            case "Рейтинг участников":
-
+            case "Рейтинг студентов":
+                sendMessage.setText(botMessage.topUsers(telegramUsers));
                 break;
             case "Отправить домашнее задание":
             case "Сделать рассылку дз":

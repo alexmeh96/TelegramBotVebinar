@@ -1,13 +1,16 @@
 package org.itmo.Components;
 
+import org.itmo.Components.googleSheet.BotGoogleSheet;
 import org.itmo.Components.model.QuestionUser;
 import org.itmo.Components.model.TelegramUsers;
 import org.itmo.Components.model.User;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.Date;
+import java.io.IOException;
+import java.security.GeneralSecurityException;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Component
 public class BotMessage {
@@ -75,15 +78,36 @@ public class BotMessage {
     public String cashHW(TelegramUsers telegramUsers, User user, Date date){
         String num = user.getNumFile();
         Date firstDate = new Date(date.getTime()- 60_000l);
-        if(telegramUsers.getMapDate().containsKey(num) && firstDate.before(telegramUsers.getMapDate().get(num))){
+        if(!user.getSendHW().contains(num) && telegramUsers.getMapDate().containsKey(num) && firstDate.before(telegramUsers.getMapDate().get(num))){
             user.setCash(user.getCash() + 10);
+            user.getSendHW().add(num);
+            System.out.println(num);
+            try {
+                BotGoogleSheet.Update(7, user.getRowId(), String.valueOf(user.getCash()));
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (GeneralSecurityException e) {
+                e.printStackTrace();
+            }
             return "Ваше домашнее задание отправлено вовремя!\nВы получаете 10 баллов!";
         }
         return "Ваше домашнее задание отправлено!";
     }
 
     public String topUsers(TelegramUsers telegramUsers){
-        
-        return "";
+        List<User> userList = telegramUsers.getUserMap().values().stream().sorted(new Comparator<User>() {
+            @Override
+            public int compare(User user, User t1) {
+                return user.getCash() - t1.getCash();
+            }
+        }).collect(Collectors.toList());
+
+        StringBuilder result = new StringBuilder();
+
+        for (User user : userList){
+            result.append(user.getUsername() + " " + user.getCash() + "\n");
+        }
+
+        return result.toString();
     }
 }

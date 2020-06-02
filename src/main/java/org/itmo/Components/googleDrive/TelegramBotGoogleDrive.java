@@ -61,16 +61,16 @@ public class TelegramBotGoogleDrive {
             log.trace("Ошибка создания основных папок в Google Drive: {}", e.getStackTrace());
 //            e.printStackTrace();
         }
-        try {
-            BotGoogleSheet.DeployUpdateAll();
-            log.info("Данные из листа формы записаны в основной лист таблицы");
-        } catch (IOException e) {
-            log.trace("Ошибка записи данных в основной лист: {]", e.getStackTrace());
-//            e.printStackTrace();
-        } catch (GeneralSecurityException e) {
-            log.trace("Ошибка записи данных в основной лист: {]", e.getStackTrace());
-//            e.printStackTrace();
-        }
+//        try {
+//            BotGoogleSheet.DeployUpdateAll();
+//            log.info("Данные из листа формы записаны в основной лист таблицы");
+//        } catch (IOException e) {
+//            log.trace("Ошибка записи данных в основной лист: {]", e.getStackTrace());
+////            e.printStackTrace();
+//        } catch (GeneralSecurityException e) {
+//            log.trace("Ошибка записи данных в основной лист: {]", e.getStackTrace());
+////            e.printStackTrace();
+//        }
     }
 
     // -------------------------------------ЗАПУСК ОДИН РАЗ СРАЗУ ПОСЛЕ АКТИВАЦИИ БОТА -----------------

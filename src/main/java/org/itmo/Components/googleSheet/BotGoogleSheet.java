@@ -12,6 +12,7 @@ import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.client.util.store.FileDataStoreFactory;
 import com.google.api.services.sheets.v4.Sheets;
 import com.google.api.services.sheets.v4.SheetsScopes;
+import com.google.api.services.sheets.v4.model.AppendValuesResponse;
 import com.google.api.services.sheets.v4.model.UpdateValuesResponse;
 import com.google.api.services.sheets.v4.model.ValueRange;
 import lombok.extern.slf4j.Slf4j;
@@ -40,6 +41,8 @@ public class BotGoogleSheet {
     private String botAdmin;
 
     private static final String APPLICATION_NAME = "Google Sheet";
+
+    private int idRow = 2;
 
     public static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
     private static final String TOKENS_DIRECTORY_PATH = "tokens";
@@ -110,6 +113,11 @@ public class BotGoogleSheet {
                 .setApplicationName(APPLICATION_NAME)
                 .build();
         return service;
+    }
+
+    public String makeRange(int idRow){
+        String range = "Full!A" + idRow + ":H" + idRow;
+        return range;
     }
 
 
@@ -213,10 +221,10 @@ public class BotGoogleSheet {
 
         List<List<Object>> mainTableList = null;
 
-        List<List<Object>> cashTableList = null;
+  //      List<List<Object>> cashTableList = null;
         try {
             mainTableList = mainTable();
-            cashTableList = cashTable();
+   //         cashTableList = cashTable();
             log.info("Заполнение mainTableList и cashTableList");
 
         } catch (Exception e) {
@@ -227,30 +235,42 @@ public class BotGoogleSheet {
         if (mainTableList == null || mainTableList.isEmpty()){
             log.error("Основная таблица пустая!");
         } else {
-            for (List row : mainTableList){
+            for (List row : mainTableList) {
                 String name = correctUsername((String) row.get(4));
                 if (name.equals(username)){
                     userData.put("nameSheet", (String) row.get(0));
+                    userData.put("row", String.valueOf(idRow));
+
+                    try {
+                        List<List<Object>> list = new ArrayList();
+                        list.add(row.subList(0, 5));
+                        addWriter(idRow, list);
+
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    } catch (GeneralSecurityException e) {
+                        e.printStackTrace();
+                    }
+
                     log.info("Пополнение в userData");
                     break;
                 }
-
             }
         }
 
-        if (cashTableList == null || cashTableList.isEmpty()){
-            log.error("Таблица с монетами пустая!");
-        } else {
-            for (List row : cashTableList){
-                String name = correctUsername((String) row.get(0));
-                if (name.equals(username)){
-                    userData.put("cash", (String) row.get(1));
-                    log.info("Пополнение в userData");
-                    break;
-                }
-
-            }
-        }
+//        if (cashTableList == null || cashTableList.isEmpty()){
+//            log.error("Таблица с монетами пустая!");
+//        } else {
+//            for (List row : cashTableList){
+//                String name = correctUsername((String) row.get(0));
+//                if (name.equals(username)){
+//                    userData.put("cash", (String) row.get(1));
+//                    log.info("Пополнение в userData");
+//                    break;
+//                }
+//
+//            }
+//        }
         return userData;
     }
 
@@ -344,6 +364,7 @@ public class BotGoogleSheet {
      * @return Обработанный список
      */
     public static List<List<Object>> null_columns(List<List<Object>> values){
+        System.out.println(values);
         for (List<Object> row: values) {
             row.add(5, 0);
             row.add(6, 0);
@@ -379,41 +400,77 @@ public class BotGoogleSheet {
      * @throws IOException
      * @throws GeneralSecurityException
      */
-    public static void Writer(String range, List<List<Object>> values) throws IOException, GeneralSecurityException {
+
+    public static void Update(int idColumn, String row, String value) throws IOException, GeneralSecurityException {
+        String column = correct_column(idColumn);
+        String range = "Full!"+column + row;
         final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
         Sheets service = new Sheets.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT))
                 .setApplicationName(APPLICATION_NAME)
                 .build();
+        List<List<Object>> objectList = new ArrayList<>();
+        objectList.add(new ArrayList<>());
+        objectList.get(0).add(value);
+
         ValueRange appendBody = new ValueRange()
-                .setValues(values);
+                .setValues(objectList);
         UpdateValuesResponse appendResult = service.spreadsheets().values()
                 .update(SPREADSHEET_ID, range, appendBody)
                 .setValueInputOption("RAW")
                 .execute();
     }
 
-    /**
-     * Метод вызываемый один раз при деплое для создания общей таблицы
-     * @throws IOException
-     * @throws GeneralSecurityException
-     */
-    public static void DeployUpdateAll() throws IOException, GeneralSecurityException {
-        String range = "LeadsFromTilda!A2:E400";
-        String range2 = "Full!A2:H400";
 
-        Writer(range2, correct_num(null_columns(Reader(range))));
+
+//    /**
+//     * Метод вызываемый один раз при деплое для создания общей таблицы
+//     * @throws IOException
+//     * @throws GeneralSecurityException
+//     */
+//    public static void DeployUpdateAll() throws IOException, GeneralSecurityException {
+//        String range = "LeadsFromTilda!A2:E400";
+//        String range2 = "Full!A2:H400";
+//
+//        Writer(range2, correct_num(null_columns(Reader(range))));
+//    }
+
+//    /**
+//     * Метод вызываемый для обновления данных в гугл таблице(вызывается каждый раз при старте нового пользователя)
+//     * @param values Список списков объектов с данными о пользователях(из программы)
+//     * @throws IOException
+//     * @throws GeneralSecurityException
+//     */
+//    public static void UpdateAll(List<List<Object>> values) throws IOException, GeneralSecurityException {
+//        String range = "LeadsFromTilda!A2:E400";
+//        String range2 = "Full!A2:H400";
+//
+//        Writer(range2, correct_num(values));
+//    }
+
+    public void addWriter(int idRow, List<List<Object>> values) throws IOException, GeneralSecurityException {
+        System.out.println(values);
+        String range = makeRange(idRow);
+        final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
+        Sheets service = new Sheets.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT))
+                .setApplicationName(APPLICATION_NAME)
+                .build();
+
+        ValueRange appendBody = new ValueRange()
+                .setValues(null_columns(values));
+        AppendValuesResponse appendResult = service.spreadsheets().values()
+                .append(SPREADSHEET_ID, range, appendBody)
+                .setValueInputOption("USER_ENTERED")
+                .setInsertDataOption("INSERT_ROWS")
+                .setIncludeValuesInResponse(true)
+                .execute();
+        idRow++;
     }
 
-    /**
-     * Метод вызываемый для обновления данных в гугл таблице(вызывается каждый раз при старте нового пользователя)
-     * @param values Список списков объектов с данными о пользователях(из программы)
-     * @throws IOException
-     * @throws GeneralSecurityException
-     */
-    public static void UpdateAll(List<List<Object>> values) throws IOException, GeneralSecurityException {
-        String range = "LeadsFromTilda!A2:E400";
-        String range2 = "Full!A2:H400";
-
-        Writer(range2, correct_num(values));
+    public static String correct_column(int id){
+        String column;
+        List<Character> symbol = Arrays.asList('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H');
+        column = String.valueOf(symbol.get(id));
+        return column;
     }
+
 }

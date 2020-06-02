@@ -1,17 +1,16 @@
 package org.itmo.Components.model;
 
 import com.google.api.services.drive.model.File;
-import lombok.Getter;
-import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
-@Getter
-@Setter
 public class User {
 
     private Long chatId;
+
     private String username;
     private String usernameSheet;
     private boolean sendHomework;
@@ -19,19 +18,22 @@ public class User {
     private File userDirectory;
     private String numFile;
     private Integer cash;
+    private Set<String> sendHW = new TreeSet<>();
+    private String rowId;
 
     private List<QuestionUser> listQuestion = new ArrayList<>();
 
     public User(){}
 
-    public User(Long chatId, String username, String usernameSheet, File file, Integer cash) {
+    public User(Long chatId, String username, String usernameSheet, File file, String rowId) {
         this.chatId = chatId;
         this.username = username;
         this.usernameSheet = usernameSheet;
         this.userDirectory = file;
         this.sendHomework = false;
         this.askQuestion = false;
-        this.cash = cash;
+        this.cash = 0;
+        this.rowId = rowId;
     }
 
     public String getUsername() {
@@ -104,6 +106,22 @@ public class User {
 
     public void setCash(Integer cash) {
         this.cash = cash;
+    }
+
+    public Set<String> getSendHW() {
+        return sendHW;
+    }
+
+    public void setSendHW(Set<String> sendHW) {
+        this.sendHW = sendHW;
+    }
+
+    public String getRowId() {
+        return rowId;
+    }
+
+    public void setRowId(String rowId) {
+        this.rowId = rowId;
     }
 
     @Override
