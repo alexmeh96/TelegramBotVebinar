@@ -12,6 +12,7 @@ import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.client.util.store.FileDataStoreFactory;
 import com.google.api.services.sheets.v4.Sheets;
 import com.google.api.services.sheets.v4.SheetsScopes;
+import com.google.api.services.sheets.v4.model.UpdateValuesResponse;
 import com.google.api.services.sheets.v4.model.ValueRange;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
@@ -33,7 +34,7 @@ public class BotGoogleSheet {
     private String uploadPath = "/home/alex/work/java/Projects/TelegramBotVebinar/src/main/resources/";
 
    // @Value("${googleSheet}")
-    private String SPREADSHEET_ID = "1wOOgK2KK6OE7tmLPsJR-_Jt_sBVfCtD0Qk-n1CqZpbc";
+    private static String SPREADSHEET_ID = "1wOOgK2KK6OE7tmLPsJR-_Jt_sBVfCtD0Qk-n1CqZpbc";
 
     @Value("${botAdmin}")
     private String botAdmin;
@@ -110,6 +111,7 @@ public class BotGoogleSheet {
                 .build();
         return service;
     }
+
 
     private List mainTable()  {
 
@@ -321,5 +323,97 @@ public class BotGoogleSheet {
         }
         log.warn("Ошибка запроса почты для {}", telegram_username);
         return null;
+    }
+
+    /**
+     * Метод исправляющий вид номеров в таблицы для корректного отображения
+     * @param values Список списков объектов с данными о пользователях
+     * @return Обработанный список
+     */
+    public static List<List<Object>> correct_num(List<List<Object>> values){
+        for (List<Object> row: values) {
+            String num = "\'" + (String) row.get(3);
+            row.set(3, num);
+        }
+        return values;
+    }
+
+    /**
+     * Метод зануляющий столбцы
+     * @param values Список списков объектов с данными о пользователях
+     * @return Обработанный список
+     */
+    public static List<List<Object>> null_columns(List<List<Object>> values){
+        for (List<Object> row: values) {
+            row.add(5, 0);
+            row.add(6, 0);
+            row.add(7, 0);
+        }
+        return values;
+    }
+
+    /**
+     * Метод считывающий данные из гугл таблицы
+     * @param range Диапозон требуемый для считывания
+     * @return Обработанный список
+     * @throws IOException
+     * @throws GeneralSecurityException
+     */
+    public static List<List<Object>> Reader(String range) throws IOException, GeneralSecurityException {
+        final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
+        Sheets service = new Sheets.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT))
+                .setApplicationName(APPLICATION_NAME)
+                .build();
+        ValueRange response = service.spreadsheets().values().get(SPREADSHEET_ID, range).execute();
+
+        List<List<Object>> values = response.getValues();
+
+        return values;
+
+    }
+
+    /**
+     * Метод записывающий данные в гугл таблицу
+     * @param range Диапозон требуемый для считывания
+     * @param values Список списков объектов с данными о пользователях
+     * @throws IOException
+     * @throws GeneralSecurityException
+     */
+    public static void Writer(String range, List<List<Object>> values) throws IOException, GeneralSecurityException {
+        final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
+        Sheets service = new Sheets.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT))
+                .setApplicationName(APPLICATION_NAME)
+                .build();
+        ValueRange appendBody = new ValueRange()
+                .setValues(values);
+        UpdateValuesResponse appendResult = service.spreadsheets().values()
+                .update(SPREADSHEET_ID, range, appendBody)
+                .setValueInputOption("RAW")
+                .execute();
+    }
+
+    /**
+     * Метод вызываемый один раз при деплое для создания общей таблицы
+     * @throws IOException
+     * @throws GeneralSecurityException
+     */
+    public static void DeployUpdateAll() throws IOException, GeneralSecurityException {
+        String range = "LeadsFromTilda!A2:E400";
+        String range2 = "Full!A2:H400";
+
+        Writer(range2, correct_num(null_columns(Reader(range))));
+    }
+
+    /**
+     * Метод вызываемый для обновления данных в гугл таблице(вызывается каждый раз при старте нового пользователя)
+     * @param values Список списков объектов с данными о пользователях(из программы)
+     * @throws IOException
+     * @throws GeneralSecurityException
+     */
+    public static void UpdateAll(List<List<Object>> values) throws IOException, GeneralSecurityException {
+        String range = "LeadsFromTilda!A2:E400";
+        String range2 = "Full!A2:H400";
+
+        Writer(range2, correct_num(values));
     }
 }

@@ -40,7 +40,7 @@ public class MainTelegramBot extends TelegramWebhookBot {
 
         BotApiMethod<?> sendMessage = null;
         try {
-            log.info("Сборка сообщения для отправки");
+            log.info("Получено сообщение");
             sendMessage = telegramFacade.createAnswer(update);
         } catch (Exception e) {
             //log.trace("Ошибка сборки сообщения: {}", e.getStackTrace());
