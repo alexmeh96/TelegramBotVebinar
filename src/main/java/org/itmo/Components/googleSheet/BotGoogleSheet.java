@@ -244,7 +244,7 @@ public class BotGoogleSheet {
                     try {
                         List<List<Object>> list = new ArrayList();
                         list.add(row.subList(0, 5));
-                        addWriter(idRow, list);
+                        addWriter(idRow, correct_num(list));
 
                     } catch (IOException e) {
                         e.printStackTrace();
@@ -380,7 +380,8 @@ public class BotGoogleSheet {
      * @throws IOException
      * @throws GeneralSecurityException
      */
-    public static List<List<Object>> Reader(String range) throws IOException, GeneralSecurityException {
+    public static List<List<Object>> Reader() throws IOException, GeneralSecurityException {
+        String range = "Full!A2:H400";
         final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
         Sheets service = new Sheets.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT))
                 .setApplicationName(APPLICATION_NAME)

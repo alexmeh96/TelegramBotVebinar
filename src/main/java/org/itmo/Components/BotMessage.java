@@ -1,7 +1,7 @@
 package org.itmo.Components;
 
 import org.itmo.Components.googleSheet.BotGoogleSheet;
-import org.itmo.Components.model.QuestionUser;
+import org.itmo.Components.model.Question;
 import org.itmo.Components.model.TelegramUsers;
 import org.itmo.Components.model.User;
 import org.springframework.beans.factory.annotation.Value;
@@ -57,12 +57,12 @@ public class BotMessage {
                 else if (i>0){
                     text = new StringBuilder("<b>@" + user.getUsername() + "</b>\n");
                     user.setListQuestion(user.getListQuestion().subList(i, user.getListQuestion().size()));
-                    for (QuestionUser qu : user.getListQuestion()) {
+                    for (Question qu : user.getListQuestion()) {
                         text.append(qu.toString());
                     }
                 }else{
                     text = new StringBuilder("<b>@" + user.getUsername() + "</b>\n");
-                    for (QuestionUser qu : user.getListQuestion()) {
+                    for (Question qu : user.getListQuestion()) {
                         text.append(qu.toString());
                     }
                 }
@@ -83,10 +83,8 @@ public class BotMessage {
             user.getSendHW().add(num);
             System.out.println(num);
             try {
-                BotGoogleSheet.Update(7, user.getRowId(), String.valueOf(user.getCash()));
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (GeneralSecurityException e) {
+                BotGoogleSheet.Update(6, user.getRowId(), String.valueOf(user.getCash()));
+            } catch (IOException | GeneralSecurityException e) {
                 e.printStackTrace();
             }
             return "Ваше домашнее задание отправлено вовремя!\nВы получаете 10 баллов!";
@@ -98,14 +96,14 @@ public class BotMessage {
         List<User> userList = telegramUsers.getUserMap().values().stream().sorted(new Comparator<User>() {
             @Override
             public int compare(User user, User t1) {
-                return user.getCash() - t1.getCash();
+                return (user.getCash() - t1.getCash())*(-1);
             }
         }).collect(Collectors.toList());
 
         StringBuilder result = new StringBuilder();
 
         for (User user : userList){
-            result.append(user.getUsername() + " " + user.getCash() + "\n");
+            result.append(user.getUsername()).append(" ").append(user.getCash()).append("\n");
         }
 
         return result.toString();

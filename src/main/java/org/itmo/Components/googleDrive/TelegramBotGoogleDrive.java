@@ -97,7 +97,7 @@ public class TelegramBotGoogleDrive {
             googleFile = CreateHWFile.createGoogleFile(folder_student.getId(), CheckTypeDoc.CheckType(fileName), newFileName, inputStream);
             return true;
         } catch (IOException e) {
-            log.trace("Ошибка загрузки файла с дз: {}", e.getStackTrace());
+            log.error("Ошибка загрузки файла с дз: {}", e.getStackTrace());
 //            e.printStackTrace();
         }
         // Отправить пользователю

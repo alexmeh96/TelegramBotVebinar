@@ -1,27 +1,31 @@
 package org.itmo.Components.model;
 
 import com.google.api.services.drive.model.File;
+import lombok.Getter;
+import lombok.Setter;
+import org.itmo.Components.botButton.TelegramButton;
+import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
+@Getter
+@Setter
 public class User {
 
-    private Long chatId;
-
-    private String username;
-    private String usernameSheet;
+    private Long chatId;    //Id чата
+    private String username;   //ник телеграма
+    private String usernameSheet;   //имя
     private boolean sendHomework;
     private boolean askQuestion;
-    private File userDirectory;
+    private File userDirectory;   //папка
     private String numFile;
-    private Integer cash;
-    private Set<String> sendHW = new TreeSet<>();
-    private String rowId;
-
-    private List<QuestionUser> listQuestion = new ArrayList<>();
+    private Integer cash;    //количество монет
+    private Set<String> sendHW = new TreeSet<>();    //номера отправленных домашек
+    private String rowId;    //номер строки студента в созданной таблице
+    private List<Question> listQuestion = new ArrayList<>();   //список вопросов
 
     public User(){}
 
@@ -36,93 +40,6 @@ public class User {
         this.rowId = rowId;
     }
 
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getUsernameSheet() {
-        return usernameSheet;
-    }
-
-    public void setUsernameSheet(String usernameSheet) {
-        this.usernameSheet = usernameSheet;
-    }
-
-    public boolean isSendHomework() {
-        return sendHomework;
-    }
-
-    public void setSendHomework(boolean sendHomework) {
-        this.sendHomework = sendHomework;
-    }
-
-    public File getUserDirectory() {
-        return userDirectory;
-    }
-
-    public void setUserDirectory(File userDirectory) {
-        this.userDirectory = userDirectory;
-    }
-
-    public Long getChatId() {
-        return chatId;
-    }
-
-    public void setChatId(Long chatId) {
-        this.chatId = chatId;
-    }
-
-    public String getNumFile() {
-        return numFile;
-    }
-
-    public void setNumFile(String numFile) {
-        this.numFile = numFile;
-    }
-
-    public boolean isAskQuestion() {
-        return askQuestion;
-    }
-
-    public void setAskQuestion(boolean askQuestion) {
-        this.askQuestion = askQuestion;
-    }
-
-    public List<QuestionUser> getListQuestion() {
-        return listQuestion;
-    }
-
-    public void setListQuestion(List<QuestionUser> listQuestion) {
-        this.listQuestion = listQuestion;
-    }
-
-    public Integer getCash() {
-        return cash;
-    }
-
-    public void setCash(Integer cash) {
-        this.cash = cash;
-    }
-
-    public Set<String> getSendHW() {
-        return sendHW;
-    }
-
-    public void setSendHW(Set<String> sendHW) {
-        this.sendHW = sendHW;
-    }
-
-    public String getRowId() {
-        return rowId;
-    }
-
-    public void setRowId(String rowId) {
-        this.rowId = rowId;
-    }
 
     @Override
     public String toString() {
