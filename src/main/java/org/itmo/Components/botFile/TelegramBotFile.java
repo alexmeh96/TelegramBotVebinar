@@ -16,7 +16,7 @@ import java.net.URL;
 public class TelegramBotFile {
 
     //@Value("${botToken}")
-    private final String token = "1158197395:AAGIe0V25U0FgH9SuYkuFfz80EYii76cd7Q";
+    private final String token = "1283464616:AAGdDzAlPb_JxQ72VRic9_rN-6WRG7lM2S4";
 
     final String FILE_ID_URL = "https://api.telegram.org/bot" + token + "/getFile?file_id=";
     final String FILE_PATH_URL = "https://api.telegram.org/file/bot" + token + "/";

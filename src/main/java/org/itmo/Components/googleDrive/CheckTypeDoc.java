@@ -1,10 +1,15 @@
 package org.itmo.Components.googleDrive;
 
-import java.io.File;
 
-// Проверка расширения файла(для загрузки на гугл диск
+/**
+ * Проверка расширения файла для запроса в Google Диск
+ */
 public class CheckTypeDoc {
-    // вытаскиваем расширение
+    /**
+     *  Метод для получения расширения файла
+     * @param fileName имя файла
+     * @return расширение файла
+     */
     private static String getFileExtension(String fileName) {
         // если в имени файла есть точка и она не является первым символом в названии файла
         if (fileName.lastIndexOf(".") != -1 && fileName.lastIndexOf(".") != 0)
@@ -14,6 +19,12 @@ public class CheckTypeDoc {
         else return "";
     }
     // делаем проверку и возвращаем шаблон
+
+    /**
+     * Метод возвращающий тип Google файла
+     * @param fileName имя файла
+     * @return расширение Google файла
+     */
     public static String CheckType (String fileName){
         switch (getFileExtension(fileName)) {
             case "txt":

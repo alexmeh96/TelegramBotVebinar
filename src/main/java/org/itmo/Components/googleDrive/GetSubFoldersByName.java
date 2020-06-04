@@ -9,10 +9,22 @@ import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.model.File;
 import com.google.api.services.drive.model.FileList;
 
+/**
+ * Класс для поиска папок на Google Диск
+ */
 public class GetSubFoldersByName {
-
+    /**
+     * Поле родительской папки
+     */
     public static String FOLDER_PARENT_ID;
-    // com.google.api.services.drive.model.File
+
+    /**
+     * Класс для поиска папок на Google Диск по id родителя
+     * @param googleFolderIdParent id родительской папки
+     * @param subFolderName имя папки
+     * @return лист с найденными папками
+     * @throws IOException
+     */
     public static final List<File> getGoogleSubFolderByName(String googleFolderIdParent, String subFolderName)
             throws IOException {
 
@@ -45,7 +57,12 @@ public class GetSubFoldersByName {
         return list;
     }
 
-    // com.google.api.services.drive.model.File
+    /**
+     * Класс для поиска папок на Google Диск без id родителя
+     * @param subFolderName имя папки
+     * @return лист с найденными папками
+     * @throws IOException
+     */
     public static final List<File> getGoogleRootFoldersByName(String subFolderName) throws IOException {
         return getGoogleSubFolderByName(null,subFolderName);
     }

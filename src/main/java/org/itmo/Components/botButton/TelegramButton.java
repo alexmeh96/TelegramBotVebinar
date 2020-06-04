@@ -15,7 +15,7 @@ import java.util.Map;
 
 @Component
 /**
- * управление кнопками
+ * Управление кнопками
  */
 public class TelegramButton {
 

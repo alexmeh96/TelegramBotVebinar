@@ -8,9 +8,18 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Класс для создания папки на Google Диск
+ */
 public class CreateFolder {
 
-    // Создаём папку
+    /**
+     * Метод для создания папки на Google Диск
+     * @param folderIdParent id родительской папки
+     * @param folderName имя папки
+     * @return созданную папку
+     * @throws IOException
+     */
     public static final File createGoogleFolder(String folderIdParent, String folderName) throws IOException {
 
         File fileMetadata = new File();

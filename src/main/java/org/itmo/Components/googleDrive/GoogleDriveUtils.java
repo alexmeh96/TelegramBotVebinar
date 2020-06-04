@@ -21,6 +21,9 @@ import java.util.List;
 
 @SuppressWarnings("ALL")
 @Slf4j
+/**
+ * Класс для подключения к Google Диску
+ */
 public class GoogleDriveUtils {
 
     private static final org.apache.logging.log4j.Logger log = org.apache.logging.log4j.LogManager.getLogger(BotGoogleSheet.class);
@@ -31,7 +34,7 @@ public class GoogleDriveUtils {
 
     // Каталог для хранения учетных данных пользователя для этого приложения.
     private static final File CREDENTIALS_FOLDER //
-            = new File("/home/alex/work/java/Projects/TelegramBotVebinar/src/main", "resources");
+            = new File("/Users/markgurianov/Desktop/TelegramBotVebinar/src/main", "resources");
 
     private static final String CLIENT_SECRET_FILE_NAME = "client_secret.json";
 

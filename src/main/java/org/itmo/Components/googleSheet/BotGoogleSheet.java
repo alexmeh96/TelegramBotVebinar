@@ -251,7 +251,7 @@ public class BotGoogleSheet {
                     } catch (GeneralSecurityException e) {
                         e.printStackTrace();
                     }
-
+                    idRow++;
                     log.info("Пополнение в userData");
                     break;
                 }

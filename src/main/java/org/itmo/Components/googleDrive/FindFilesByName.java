@@ -8,9 +8,17 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Класс для поиска файла на Google Диск
+ */
 public class FindFilesByName {
 
-    // com.google.api.services.drive.model.File
+    /**
+     * Метод для поиска файла на Google Диск
+     * @param fileNameLike имя файла
+     * @return лист найденных файлов
+     * @throws IOException
+     */
     public static final List<File> getGoogleFilesByName(String fileNameLike) throws IOException {
 
         Drive driveService = GoogleDriveUtils.getDriveService();

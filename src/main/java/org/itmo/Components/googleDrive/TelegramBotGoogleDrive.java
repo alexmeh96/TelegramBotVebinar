@@ -18,11 +18,14 @@ import java.util.*;
 @SuppressWarnings("ALL")
 @Slf4j
 @Component
+/**
+ * Метод для работы бота с Google Диском
+ */
 public class TelegramBotGoogleDrive {
 
     private static final org.apache.logging.log4j.Logger log = org.apache.logging.log4j.LogManager.getLogger(TelegramBotGoogleDrive.class);
 
-    public static String MainID, HWID, HW_day, fileid;
+    private static String MainID, HWID, HW_day, fileid;
 
     private File studentsFolderHW;
     private File studentFolder;
@@ -30,6 +33,9 @@ public class TelegramBotGoogleDrive {
     private File folderHW;
     private Map<String, File> fileMapHW = new HashMap<>();;
 
+    /**
+     * Метод подготовки пространства на Google Диск(Создание необходимых папок)
+     */
     public TelegramBotGoogleDrive(){
         //deploy();
         projectFolder = findFolder("Проект 1", null);
@@ -42,12 +48,12 @@ public class TelegramBotGoogleDrive {
 
     }
 
-    public Map<String, File> getFileMapHW() {
+    private Map<String, File> getFileMapHW() {
         return fileMapHW;
     }
 
     //-------------------------------------ЗАПУСК ОДИН РАЗ СРАЗУ ПОСЛЕ ДЕПЛОЯ -------------------------
-    public void deploy() {
+    private void deploy() {
         try {
             // Создание папки проекта
             File folder_project = CreateFolder.createGoogleFolder(null, "Проект 1");
@@ -61,19 +67,15 @@ public class TelegramBotGoogleDrive {
             log.trace("Ошибка создания основных папок в Google Drive: {}", e.getStackTrace());
 //            e.printStackTrace();
         }
-//        try {
-//            BotGoogleSheet.DeployUpdateAll();
-//            log.info("Данные из листа формы записаны в основной лист таблицы");
-//        } catch (IOException e) {
-//            log.trace("Ошибка записи данных в основной лист: {]", e.getStackTrace());
-////            e.printStackTrace();
-//        } catch (GeneralSecurityException e) {
-//            log.trace("Ошибка записи данных в основной лист: {]", e.getStackTrace());
-////            e.printStackTrace();
-//        }
     }
 
     // -------------------------------------ЗАПУСК ОДИН РАЗ СРАЗУ ПОСЛЕ АКТИВАЦИИ БОТА -----------------
+
+    /**
+     * Метод создающий папки с дз для студентов
+     * @param username имя студента
+     * @return папку студента
+     */
     public File activate(String username) {
         try {
             studentFolder = CreateFolder.createGoogleFolder(studentsFolderHW.getId(), username);
@@ -86,9 +88,17 @@ public class TelegramBotGoogleDrive {
     }
 
     // -----------------ЗАПУСК КАЖДЫЙ РАЗ ПОСЛЕ АКТИВАЦИИ КНОПКИ "Отправить дз -> Дз1" -----------------
+
+    /**
+     * Метод для отправки файла с дз
+     * @param inputStream поток
+     * @param fileName имя файла
+     * @param newFileName новое имя файла
+     * @param folder_student id папки студента
+     * @return флаг отправки
+     */
     public boolean sendHomework(InputStream inputStream, String fileName, String newFileName, File folder_student) {
         log.info("Отправка домашнего задани {}",folder_student.getName());
-//        System.out.println("sendHomework");
         // Создание файлов с дз
         File googleFile = null;
         try {
@@ -105,7 +115,12 @@ public class TelegramBotGoogleDrive {
 
     }
 
-
+    /**
+     * Поиск папки
+     * @param fileName имя папки
+     * @param folderSearch родительская папка
+     * @return найденную папку
+     */
     public File findFolder(String fileName, File folderSearch){
         try {
             List<File> fileList;
@@ -121,7 +136,7 @@ public class TelegramBotGoogleDrive {
         return null;
     }
 
-    public void method2(File file){
+    private void method2(File file){
         String fileId = file.getId();
         OutputStream outputStream = new ByteArrayOutputStream();
         try {
@@ -139,52 +154,15 @@ public class TelegramBotGoogleDrive {
             String fname = file.getName();
             String ex = fname.substring(fname.lastIndexOf(".") + 1);
 
-//            if (ex.equalsIgnoreCase("xlsx")) {
-//                httpResponse = f
-//                        .export(file.getId(),
-//                                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-//                        .executeMedia();
-//
-//            } else if (ex.equalsIgnoreCase("docx")) {
-//                httpResponse = f
-//                        .export(file.getId(),
-//                                "application/vnd.openxmlformats-officedocument.wordprocessingml.document")
-//                        .executeMedia();
-//            } else if (ex.equalsIgnoreCase("pptx")) {
-//                httpResponse = f
-//                        .export(file.getId(),
-//                                "application/vnd.openxmlformats-officedocument.presentationml.presentation")
-//                        .executeMedia();
-//
-//            } else if (ex.equalsIgnoreCase("pdf")
-//                    || ex.equalsIgnoreCase("jpg")
-//                    || ex.equalsIgnoreCase("png")) {
-//
-//                Drive.Files.Get get = f.get(file.getId());
-//                httpResponse = get.executeMedia();
-//
-//            }
             if (null != httpResponse) {
                 InputStream instream = httpResponse.getContent();
-//                FileOutputStream output = new FileOutputStream(
-//                        file.getName());
-//                try {
-//                    int l;
-//                    byte[] tmp = new byte[2048];
-//                    while ((l = instream.read(tmp)) != -1) {
-//                        output.write(tmp, 0, l);
-//                    }
-//                } finally {
-//                    output.close();
-//                    instream.close();
-//                }
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    public String getFileVideoId(String ParentsID){
+    private String getFileVideoId(String ParentsID){
         String fileNameLike = "HW_video.mp4";
         String type = "video/mp4";
         Drive driveService = null;
@@ -225,7 +203,7 @@ public class TelegramBotGoogleDrive {
         return list.get(0).getId();
     }
 
-    public String getTextHW(String ParentsID){
+    private String getTextHW(String ParentsID){
 
         String fileNameLike = "HW_text";
         String type = "application/vnd.google-apps.document";
@@ -280,7 +258,7 @@ public class TelegramBotGoogleDrive {
 
 
 
-    public InputStream downloadFile(String nameFolder) {
+    private InputStream downloadFile(String nameFolder) {
 
         // Поиск файла с новостью(создавал его для теста)
 //        List<File> mainGoogleFolders = GetSubFoldersByName.getGoogleRootFoldersByName("Проект 1");
