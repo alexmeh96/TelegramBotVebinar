@@ -6,6 +6,9 @@ import lombok.Setter;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+/**
+ * Класс содержащий текст и дату отправки вопроса студента
+ */
 @Getter
 @Setter
 public class Question {

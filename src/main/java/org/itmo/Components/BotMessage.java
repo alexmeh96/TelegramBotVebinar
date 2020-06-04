@@ -13,6 +13,9 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
+/**
+ * текстовые сообщения
+ */
 public class BotMessage {
 
     @Value("${botAdmin}")
@@ -21,25 +24,39 @@ public class BotMessage {
     @Value("${botSpiker}")
     private String botSpiker;
 
+    /**
+     * просьба написать админу
+     * @return текстовое сообщение
+     */
     public String messageAdmin(){
         return "Напишите нашему\nадминистратору " + botAdmin;
     }
 
-    public String messageSpiker(){
-        return "Напишите нашему\nспикеру " + botSpiker;
-    }
-
+    /**
+     * приветствие студенту
+     * @param usernameSheets имя студента
+     * @return текстовое сообщение
+     */
     public String welcomeMessage(String usernameSheets) {
         return "Привет, " + usernameSheets + "! Я - твой бот-помощник в игре \"Метод Плесовских\". \n" +
                 "Я 24/7 на связи, поэтому ты в любой момент можете обратиться ко мне со своим вопросом.";
-
     }
 
+    /**
+     * сообщение незарегистрированному пользователю
+     * @return текстовое сообщение
+     */
     public String negativeMessage(){
         return "Привет, вы еще не зарегистрировались на курс \n" +
                 "Если вы регистрировались на курс, напишите нашему администратору " + botAdmin;
     }
 
+    /**
+     * список вопросов студентов
+     * @param telegramUsers пользователи бота
+     * @param date текущая дата получения списка
+     * @return текстовое сообщение
+     */
     public String questionList(TelegramUsers telegramUsers, Date date){
         //Date firstDate = new Date(date.getTime() - 172_800_000L);
         Date firstDate = new Date(date.getTime() - 40_000L);
@@ -75,6 +92,13 @@ public class BotMessage {
         return text.toString();
     }
 
+    /**
+     * изменение баллов в зависимости от даты отправки дз студентом
+     * @param telegramUsers  пользователи бота
+     * @param user студент отправивший дз
+     * @param date  дата отправки дз
+     * @return текстовое сообщение
+     */
     public String cashHW(TelegramUsers telegramUsers, User user, Date date){
         String num = user.getNumFile();
         Date firstDate = new Date(date.getTime()- 60_000l);
@@ -92,13 +116,13 @@ public class BotMessage {
         return "Ваше домашнее задание отправлено!";
     }
 
+    /**
+     * список топ студентов по колличеству монет
+     * @param telegramUsers пользователи бота
+     * @return текстовое сообщение
+     */
     public String topUsers(TelegramUsers telegramUsers){
-        List<User> userList = telegramUsers.getUserMap().values().stream().sorted(new Comparator<User>() {
-            @Override
-            public int compare(User user, User t1) {
-                return (user.getCash() - t1.getCash())*(-1);
-            }
-        }).collect(Collectors.toList());
+        List<User> userList = telegramUsers.getUserMap().values().stream().sorted((user, t1) -> t1.getCash() - user.getCash()).collect(Collectors.toList());
 
         StringBuilder result = new StringBuilder();
 

@@ -14,8 +14,17 @@ import java.util.List;
 import java.util.Map;
 
 @Component
+/**
+ * управление кнопками
+ */
 public class TelegramButton {
 
+    /**
+     * Создание инлайновых кнопок
+     * @param buttonListText  список названий кнопок
+     * @param buttonListId  список id кнопок
+     * @return инлайновая клавиатура
+     */
     public static InlineKeyboardMarkup createInlineButton(List<String> buttonListText, List<String> buttonListId){
         InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
         List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
@@ -31,7 +40,12 @@ public class TelegramButton {
         return markupInline;
     }
 
-
+    /**
+     * создание статических кнопок
+     * @param textMessage текстовое сообщение
+     * @param buttonListText  список названий кнопок
+     * @return  SendMessage с статическими кнопкими
+     */
     public static SendMessage createButton(String textMessage, List<String> buttonListText) {
         final ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
         replyKeyboardMarkup.setSelective(true);
@@ -56,7 +70,12 @@ public class TelegramButton {
         return sendMessage;
     }
 
-    public static SendMessage createUserMenu( String message){
+    /**
+     * меню студента
+     * @param message текстовое сообщение
+     * @return SendMessage с статическими кнопкими
+     */
+    public static SendMessage userMenu(String message){
         List<String> stringList = new ArrayList<>();
         stringList.add("Отправить домашнее задание");
         stringList.add("Связаться со службой поддержки");
@@ -66,7 +85,11 @@ public class TelegramButton {
         return TelegramButton.createButton(message, stringList);
     }
 
-    public static SendMessage createAdminMenu(){
+    /**
+     * админское меню
+     * @return SendMessage с инлайновыми кнопкими
+     */
+    public static SendMessage adminMenu(){
         List<String> stringList = new ArrayList<>();
         stringList.add("Список вопросов");
         stringList.add("Сделать рассылку");
@@ -75,7 +98,11 @@ public class TelegramButton {
         return TelegramButton.createButton("Здравствуйте администратор!",stringList);
     }
 
-    public static SendMessage createSending(){
+    /**
+     * инлайновым меню рассылки
+     * @return SendMessage с инлайновыми кнопкими
+     */
+    public static SendMessage sending(){
         List<String> stringList = new ArrayList<>();
         stringList.add("текст");
         stringList.add("текст и видео");
@@ -92,7 +119,11 @@ public class TelegramButton {
         return sendMessage;
     }
 
-    public static SendMessage createSendingHW(){
+    /**
+     * инлайновое меню отправки дз
+     * @return SendMessage с инлайновыми кнопкими
+     */
+    public static SendMessage sendingHW(){
         List<String> stringList = new ArrayList<>();
         stringList.add("дз1");
         stringList.add("дз2");

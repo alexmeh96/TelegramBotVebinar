@@ -3,14 +3,14 @@ package org.itmo.Components.model;
 import com.google.api.services.drive.model.File;
 import lombok.Getter;
 import lombok.Setter;
-import org.itmo.Components.botButton.TelegramButton;
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
+/**
+ * класс хранящий состояние и данные студента
+ */
 @Getter
 @Setter
 public class User {
@@ -18,10 +18,10 @@ public class User {
     private Long chatId;    //Id чата
     private String username;   //ник телеграма
     private String usernameSheet;   //имя
-    private boolean sendHomework;
-    private boolean askQuestion;
+    private boolean sendHomework;  //состояние отправки дз
+    private boolean sendQuestion;   //состояние отправки вопроса
     private File userDirectory;   //папка
-    private String numFile;
+    private String numFile;  //номер отправимого файла
     private Integer cash;    //количество монет
     private Set<String> sendHW = new TreeSet<>();    //номера отправленных домашек
     private String rowId;    //номер строки студента в созданной таблице
@@ -35,11 +35,18 @@ public class User {
         this.usernameSheet = usernameSheet;
         this.userDirectory = file;
         this.sendHomework = false;
-        this.askQuestion = false;
+        this.sendQuestion = false;
         this.cash = 0;
         this.rowId = rowId;
     }
 
+    /**
+     * сброс состояния админа
+     */
+    public void statusFalse(){
+        sendHomework = false;
+        sendQuestion = false;
+    }
 
     @Override
     public String toString() {
@@ -48,10 +55,12 @@ public class User {
                 ", username='" + username + '\'' +
                 ", usernameSheet='" + usernameSheet + '\'' +
                 ", sendHomework=" + sendHomework +
-                ", askQuestion=" + askQuestion +
+                ", sendQuestion=" + sendQuestion +
                 ", userDirectory=" + userDirectory +
                 ", numFile='" + numFile + '\'' +
                 ", cash=" + cash +
+                ", sendHW=" + sendHW +
+                ", rowId='" + rowId + '\'' +
                 ", listQuestion=" + listQuestion +
                 '}';
     }
