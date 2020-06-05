@@ -14,6 +14,7 @@ import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.DriveScopes;
 import lombok.extern.slf4j.Slf4j;
 import org.itmo.Components.googleSheet.BotGoogleSheet;
+import org.itmo.config.BotProperty;
 
 import java.io.*;
 import java.util.Collections;
@@ -31,7 +32,7 @@ public class GoogleDriveUtils {
 
     // Каталог для хранения учетных данных пользователя для этого приложения.
     private static final File CREDENTIALS_FOLDER //
-            = new File("/home/alex/work/java/Projects/TelegramBotVebinar/src/main", "resources");
+            = new File(BotProperty.PATH, "resources");
 
     private static final String CLIENT_SECRET_FILE_NAME = "client_secret.json";
 

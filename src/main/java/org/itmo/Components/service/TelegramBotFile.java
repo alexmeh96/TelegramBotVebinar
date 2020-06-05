@@ -1,6 +1,7 @@
-package org.itmo.Components.botFile;
+package org.itmo.Components.service;
 
 import lombok.Cleanup;
+import org.itmo.config.BotProperty;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -15,11 +16,8 @@ import java.net.URL;
 @Component
 public class TelegramBotFile {
 
-    //@Value("${botToken}")
-    private final String token = "1158197395:AAGIe0V25U0FgH9SuYkuFfz80EYii76cd7Q";
-
-    final String FILE_ID_URL = "https://api.telegram.org/bot" + token + "/getFile?file_id=";
-    final String FILE_PATH_URL = "https://api.telegram.org/file/bot" + token + "/";
+    final String FILE_ID_URL = "https://api.telegram.org/bot" + BotProperty.TOKEN + "/getFile?file_id=";
+    final String FILE_PATH_URL = "https://api.telegram.org/file/bot" + BotProperty.TOKEN + "/";
 
 
     /**

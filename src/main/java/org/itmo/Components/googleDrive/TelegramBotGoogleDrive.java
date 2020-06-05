@@ -139,45 +139,8 @@ public class TelegramBotGoogleDrive {
             String fname = file.getName();
             String ex = fname.substring(fname.lastIndexOf(".") + 1);
 
-//            if (ex.equalsIgnoreCase("xlsx")) {
-//                httpResponse = f
-//                        .export(file.getId(),
-//                                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-//                        .executeMedia();
-//
-//            } else if (ex.equalsIgnoreCase("docx")) {
-//                httpResponse = f
-//                        .export(file.getId(),
-//                                "application/vnd.openxmlformats-officedocument.wordprocessingml.document")
-//                        .executeMedia();
-//            } else if (ex.equalsIgnoreCase("pptx")) {
-//                httpResponse = f
-//                        .export(file.getId(),
-//                                "application/vnd.openxmlformats-officedocument.presentationml.presentation")
-//                        .executeMedia();
-//
-//            } else if (ex.equalsIgnoreCase("pdf")
-//                    || ex.equalsIgnoreCase("jpg")
-//                    || ex.equalsIgnoreCase("png")) {
-//
-//                Drive.Files.Get get = f.get(file.getId());
-//                httpResponse = get.executeMedia();
-//
-//            }
             if (null != httpResponse) {
                 InputStream instream = httpResponse.getContent();
-//                FileOutputStream output = new FileOutputStream(
-//                        file.getName());
-//                try {
-//                    int l;
-//                    byte[] tmp = new byte[2048];
-//                    while ((l = instream.read(tmp)) != -1) {
-//                        output.write(tmp, 0, l);
-//                    }
-//                } finally {
-//                    output.close();
-//                    instream.close();
-//                }
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -199,8 +162,6 @@ public class TelegramBotGoogleDrive {
 
         String query = "name = '" + fileNameLike + "' and '" + ParentsID + "' in parents " + " and mimeType = '"+ type + "' ";
       //  String query = "name = '" + fileNameLike + "'";
-
-
 
         do {
             FileList result = null;//!!!!!!
@@ -282,23 +243,6 @@ public class TelegramBotGoogleDrive {
 
     public InputStream downloadFile(String nameFolder) {
 
-        // Поиск файла с новостью(создавал его для теста)
-//        List<File> mainGoogleFolders = GetSubFoldersByName.getGoogleRootFoldersByName("Проект 1");
-//        for (File folder : mainGoogleFolders) {
-//            MainID = folder.getId();
-//        }
-//
-//
-//        List<File> hwGoogleFolders = GetSubFoldersByName.getGoogleSubFolderByName(MainID, "HW");
-//        for (File folder : hwGoogleFolders) {
-//            HWID = folder.getId();
-//        }
-//
-//        List<File> hw_day_GoogleFolders = GetSubFoldersByName.getGoogleSubFolderByName(HWID, "HW_" + "1");
-//        for (File folder : hw_day_GoogleFolders) {
-//            HW_day = folder.getId();
-//        }
-
         List<File> hw_file_GoogleFolders = null;
         try {
             hw_file_GoogleFolders = FindFilesByName.getGoogleFilesByName("HW_text");
@@ -336,26 +280,6 @@ public class TelegramBotGoogleDrive {
 //
         return inputStream;
 
-
-
-        // поиск папка
-//        String pageToken = null;
-//        do {
-//            FileList result = GoogleDriveUtils.getDriveService().files().list()
-//                    .setQ("mimeType='application/vnd.google-apps.folder' and name = 'Проект 1'")
-//                    .setSpaces("drive")
-//                    .setFields("nextPageToken, files(id, name)")
-//                    .setPageToken(pageToken)
-//                    .execute();
-//            for (File file : result.getFiles()) {
-//                System.out.printf("Found file: %s (%s)\n",
-//                        file.getName(), file.getId());
-//            }
-//            pageToken = result.getNextPageToken();
-//        } while (pageToken != null);
     }
-
-
-
 
 }

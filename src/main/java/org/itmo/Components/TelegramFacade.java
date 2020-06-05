@@ -2,15 +2,17 @@ package org.itmo.Components;
 
 import com.google.api.services.drive.model.File;
 import lombok.extern.slf4j.Slf4j;
-import org.itmo.Components.botButton.TelegramButton;
-import org.itmo.Components.botFile.TelegramBotFile;
+import org.itmo.Components.service.TelegramButton;
+import org.itmo.Components.service.TelegramBotFile;
 import org.itmo.Components.googleDrive.TelegramBotGoogleDrive;
 import org.itmo.Components.googleSheet.BotGoogleSheet;
 import org.itmo.Components.model.Admin;
 import org.itmo.Components.model.Question;
 import org.itmo.Components.model.TelegramUsers;
 import org.itmo.Components.model.User;
+import org.itmo.Components.service.BotMessage;
 import org.itmo.MainTelegramBot;
+import org.itmo.config.BotProperty;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
@@ -70,7 +72,7 @@ public class TelegramFacade {
                     if(!userData.isEmpty()) {  //если map данных не пуст
                         telegramUsers.getAdminMap().put(username, new Admin(username, chatId));   //добавляем в map админов нового админа
                         try {
-                            BotGoogleSheet.Update(5, "2", String.valueOf(1));   //ставим 1 в ячейку role новой таблицы
+                            BotGoogleSheet.Update(BotProperty.SHEET_ROLE_COL, "2", "1");   //ставим 1 в ячейку role новой таблицы
                         } catch (IOException | GeneralSecurityException e) {
                             e.printStackTrace();
                         }
@@ -111,7 +113,7 @@ public class TelegramFacade {
                     user.setChatId(chatId);
                     user.statusFalse();  //сброс состояния студента
 
-                    String message = botMessage.welcomeMessage(user.getUsernameSheet());
+                    String message = BotMessage.welcomeMessage(user.getUsernameSheet());
 
                     sendMessage = TelegramButton.userMenu(message);
                     sendMessage.setChatId(chatId);
@@ -154,7 +156,7 @@ public class TelegramFacade {
                 break;
             case "Рейтинг студентов":   //STUDENT
                 telegramUsers.getUserMap().get(username).statusFalse();
-                sendMessage.setText(botMessage.topUsers(telegramUsers));
+                sendMessage.setChatId(chatId).setText(botMessage.topUsers(telegramUsers));
                 break;
             case "Отправить домашнее задание":  //STUDENT
                 telegramUsers.getUserMap().get(username).statusFalse();
@@ -169,7 +171,7 @@ public class TelegramFacade {
             case "Пароль от личного кабинета":  //STUDENT
                 telegramUsers.getUserMap().get(username).statusFalse();
                 String password = botGoogleSheet.returnPass(username);
-                sendMessage.setText(password);
+                sendMessage.setChatId(chatId).setText(password);
                 break;
             case "Список вопросов":  //ADMIN
                 telegramUsers.getAdminMap().get(username).statusFalse();

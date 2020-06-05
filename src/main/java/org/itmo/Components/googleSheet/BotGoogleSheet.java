@@ -16,6 +16,7 @@ import com.google.api.services.sheets.v4.model.AppendValuesResponse;
 import com.google.api.services.sheets.v4.model.UpdateValuesResponse;
 import com.google.api.services.sheets.v4.model.ValueRange;
 import lombok.extern.slf4j.Slf4j;
+import org.itmo.config.BotProperty;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -31,14 +32,8 @@ import java.util.regex.Pattern;
 @Component
 public class BotGoogleSheet {
     private static final org.apache.logging.log4j.Logger log = org.apache.logging.log4j.LogManager.getLogger(BotGoogleSheet.class);
-    //@Value("${uploadPath}")
-    private String uploadPath = "/home/alex/work/java/Projects/TelegramBotVebinar/src/main/resources/";
 
-   // @Value("${googleSheet}")
-    private static String SPREADSHEET_ID = "1wOOgK2KK6OE7tmLPsJR-_Jt_sBVfCtD0Qk-n1CqZpbc";
-
-    @Value("${botAdmin}")
-    private String botAdmin;
+    private String uploadPath = BotProperty.PATH + "/resources/";
 
     private static final String APPLICATION_NAME = "Google Sheet";
 
@@ -75,21 +70,6 @@ public class BotGoogleSheet {
     }
 
     private static Credential getCredentials(final NetHttpTransport HTTP_TRANSPORT) throws IOException {
-//        Sheets sheets = null;
-//        try {
-//            Credential credential = authorize();
-//             sheets = new Sheets.Builder(
-//                    GoogleNetHttpTransport.newTrustedTransport(),
-//                    JacksonFactory.getDefaultInstance(), credential)
-//                    .setApplicationName(APPLICATION_NAME)
-//                    .build();
-//             log.info("Прошла авторицация в Google Sheet");
-//        } catch (Exception e) {
-//            log.trace("Не прошла авторицация в Google Sheet: {}", e.getStackTrace());
-////            e.printStackTrace();
-//        }
-//
-//        return sheets;
         // Load client secrets.
         InputStream in = BotGoogleSheet.class.getResourceAsStream(CREDENTIALS_FILE_PATH);
         if (in == null) {
@@ -128,7 +108,7 @@ public class BotGoogleSheet {
         ValueRange response = null;
         try {
             response = ServiceApp().spreadsheets().values()
-                    .get(SPREADSHEET_ID, range)
+                    .get(BotProperty.SPREADSHEET_ID, range)
                     .execute();
             log.info("Получена основная таблица пользователей");
         } catch (IOException | GeneralSecurityException e) {
@@ -138,43 +118,6 @@ public class BotGoogleSheet {
         List<List<Object>> values = response.getValues();
         return values;
     }
-
-    private List adminTable(){
-        String range = "Admin!A2:B400";
-
-        ValueRange response = null;
-        try {
-            response = ServiceApp().spreadsheets().values()
-                    .get(SPREADSHEET_ID, range)
-                    .execute();
-            log.info("Получена админская таблица пользователей");
-        } catch (IOException | GeneralSecurityException e) {
-            log.trace("Вылетела птичка, ЛОВИ ИСКЛЮЧЕНИЕ! \n {}", e.getStackTrace());
-//            e.printStackTrace();
-        }
-        List<List<Object>> values = response.getValues();
-        return values;
-    }
-
-    private List cashTable() {
-        String range = "Cash!A2:B400";
-
-        ValueRange response = null;
-        try {
-            response = ServiceApp().spreadsheets().values()
-                    .get(SPREADSHEET_ID, range)
-                    .execute();
-            log.info("Получена таблица с монетами пользователей");
-        } catch (IOException | GeneralSecurityException e) {
-            log.trace("Вылетела птичка, ЛОВИ ИСКЛЮЧЕНИЕ! \n {}", e.getStackTrace());
-//            e.printStackTrace();
-        }
-
-        List<List<Object>> values = response.getValues();
-        return values;
-    }
-
-
 
     private String correctUsername(String text){
         Pattern pattern = Pattern.compile("[A-Za-z0-9_]{1,}");
@@ -187,31 +130,7 @@ public class BotGoogleSheet {
         return text;
     }
 
-    public boolean findAdminTable(String username){
-        List<List<Object>> adminTableList = null;
-        try {
-            adminTableList = adminTable();
-            log.info("Заполнение adminTableList");
-        } catch (Exception e) {
-            log.trace("Ошибка заполнения adminTableList: {}", e.getStackTrace());
-//            e.printStackTrace();
-        }
 
-        if (adminTableList == null || adminTableList.isEmpty()){
-            log.error("Админская таблица пустая!");
-//            System.out.println("No data found");
-        } else {
-            for (List row : adminTableList){
-                String name = correctUsername((String) row.get(0));
-                if (name.equals(username)){
-                    log.info("{} - крутой админ!", username);
-                    return true;
-                }
-
-            }
-        }
-        return false;
-    }
 
 
     //Возвращае usernameSheet
@@ -220,16 +139,12 @@ public class BotGoogleSheet {
         Map<String, String> userData = new HashMap<>();
 
         List<List<Object>> mainTableList = null;
-
-  //      List<List<Object>> cashTableList = null;
         try {
             mainTableList = mainTable();
-   //         cashTableList = cashTable();
             log.info("Заполнение mainTableList и cashTableList");
 
         } catch (Exception e) {
             log.trace("Ошибка заполнения mainTableList и cashTableList: {}", e.getStackTrace());
-//            e.printStackTrace();
         }
 
         if (mainTableList == null || mainTableList.isEmpty()){
@@ -251,26 +166,12 @@ public class BotGoogleSheet {
                     } catch (GeneralSecurityException e) {
                         e.printStackTrace();
                     }
-
+                    idRow++;
                     log.info("Пополнение в userData");
                     break;
                 }
             }
         }
-
-//        if (cashTableList == null || cashTableList.isEmpty()){
-//            log.error("Таблица с монетами пустая!");
-//        } else {
-//            for (List row : cashTableList){
-//                String name = correctUsername((String) row.get(0));
-//                if (name.equals(username)){
-//                    userData.put("cash", (String) row.get(1));
-//                    log.info("Пополнение в userData");
-//                    break;
-//                }
-//
-//            }
-//        }
         return userData;
     }
 
@@ -299,50 +200,6 @@ public class BotGoogleSheet {
             }
         }
         log.warn("Ошибка запроса пароля для {}", telegram_username);
-        return null;
-    }
-
-
-//    public static List<List<Object>> Reader(String range) throws IOException {
-//
-//        ValueRange response = sheetsService.spreadsheets().values()
-//                .get(SPREADSHEET_ID, range)
-//                .execute();
-//
-//        List<List<Object>> values = response.getValues();
-//
-//        return values;
-//
-//    }
-//
-//    public static void Writer(String range, List<List<Object>> values) throws IOException {
-//        ValueRange appendBody = new ValueRange()
-//                .setValues(values);
-//        AppendValuesResponse appendResult = sheetsService.spreadsheets().values()
-//                .append(SPREADSHEET_ID, range, appendBody)
-//                .setValueInputOption("USER_ENTERED")
-//                .setInsertDataOption("INSERT_ROWS")
-//                .setIncludeValuesInResponse(true)
-//                .execute();
-//    }
-
-
-    public String returnMail(String telegram_username) throws Exception {
-
-        List<List<Object>> values = mainTable();
-
-        if (values == null || values.isEmpty()){
-            log.error("Основная таблица пустая!");
-        } else {
-            for (List row : values){
-                if (row.get(4).equals(telegram_username)){
-                    log.info("{} успешно запросил почту", telegram_username);
-                    return (String)row.get(1);
-                }
-
-            }
-        }
-        log.warn("Ошибка запроса почты для {}", telegram_username);
         return null;
     }
 
@@ -387,7 +244,7 @@ public class BotGoogleSheet {
         Sheets service = new Sheets.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT))
                 .setApplicationName(APPLICATION_NAME)
                 .build();
-        ValueRange response = service.spreadsheets().values().get(SPREADSHEET_ID, range).execute();
+        ValueRange response = service.spreadsheets().values().get(BotProperty.SPREADSHEET_ID, range).execute();
 
         List<List<Object>> values = response.getValues();
 
@@ -402,7 +259,6 @@ public class BotGoogleSheet {
      * @throws IOException
      * @throws GeneralSecurityException
      */
-
     public static void Update(int idColumn, String row, String value) throws IOException, GeneralSecurityException {
         String column = correct_column(idColumn);
         String range = "Full!"+column + row;
@@ -417,37 +273,11 @@ public class BotGoogleSheet {
         ValueRange appendBody = new ValueRange()
                 .setValues(objectList);
         UpdateValuesResponse appendResult = service.spreadsheets().values()
-                .update(SPREADSHEET_ID, range, appendBody)
+                .update(BotProperty.SPREADSHEET_ID, range, appendBody)
                 .setValueInputOption("RAW")
                 .execute();
     }
 
-
-
-//    /**
-//     * Метод вызываемый один раз при деплое для создания общей таблицы
-//     * @throws IOException
-//     * @throws GeneralSecurityException
-//     */
-//    public static void DeployUpdateAll() throws IOException, GeneralSecurityException {
-//        String range = "LeadsFromTilda!A2:E400";
-//        String range2 = "Full!A2:H400";
-//
-//        Writer(range2, correct_num(null_columns(Reader(range))));
-//    }
-
-//    /**
-//     * Метод вызываемый для обновления данных в гугл таблице(вызывается каждый раз при старте нового пользователя)
-//     * @param values Список списков объектов с данными о пользователях(из программы)
-//     * @throws IOException
-//     * @throws GeneralSecurityException
-//     */
-//    public static void UpdateAll(List<List<Object>> values) throws IOException, GeneralSecurityException {
-//        String range = "LeadsFromTilda!A2:E400";
-//        String range2 = "Full!A2:H400";
-//
-//        Writer(range2, correct_num(values));
-//    }
 
     public void addWriter(int idRow, List<List<Object>> values) throws IOException, GeneralSecurityException {
         System.out.println(values);
@@ -460,7 +290,7 @@ public class BotGoogleSheet {
         ValueRange appendBody = new ValueRange()
                 .setValues(null_columns(values));
         AppendValuesResponse appendResult = service.spreadsheets().values()
-                .append(SPREADSHEET_ID, range, appendBody)
+                .append(BotProperty.SPREADSHEET_ID, range, appendBody)
                 .setValueInputOption("USER_ENTERED")
                 .setInsertDataOption("INSERT_ROWS")
                 .setIncludeValuesInResponse(true)
@@ -468,7 +298,7 @@ public class BotGoogleSheet {
         idRow++;
     }
 
-    public static String correct_column(int id){
+    private static String correct_column(int id){
         String column;
         List<Character> symbol = Arrays.asList('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H');
         column = String.valueOf(symbol.get(id));
