@@ -11,10 +11,10 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.Keyboard
 import java.util.ArrayList;
 import java.util.List;
 
-@Component
 /**
  * управление кнопками
  */
+@Component
 public class TelegramButton {
 
     /**
@@ -100,7 +100,7 @@ public class TelegramButton {
      * инлайновым меню рассылки
      * @return SendMessage с инлайновыми кнопкими
      */
-    public static SendMessage sending(){
+    public static InlineKeyboardMarkup sending(){
         List<String> stringList = new ArrayList<>();
         stringList.add("текст");
         stringList.add("текст и видео");
@@ -111,17 +111,30 @@ public class TelegramButton {
         stringId.add("textVideo");
         stringId.add("textImage");
 
+        return TelegramButton.createInlineButton(stringList, stringId);
+    }
+
+    public static SendMessage sendingChoose(){
+        List<String> stringList = new ArrayList<>();
+        stringList.add("Обычная");
+        stringList.add("Vip");
+
+        List<String> stringId = new ArrayList<>();
+        stringId.add("usual");
+        stringId.add("vip");
+
         SendMessage sendMessage = new SendMessage();
         sendMessage.setReplyMarkup(TelegramButton.createInlineButton(stringList, stringId));
-        sendMessage.setText("Выберите тип рассылки:");
+        sendMessage.setText("Выберите вид рассылки:");
         return sendMessage;
     }
+
 
     /**
      * инлайновое меню отправки дз
      * @return SendMessage с инлайновыми кнопкими
      */
-    public static SendMessage sendingHW(){
+    public static SendMessage sendingMainHW(){
         List<String> stringList = new ArrayList<>();
         stringList.add("дз1");
         stringList.add("дз2");
@@ -137,4 +150,61 @@ public class TelegramButton {
         sendMessage.setText("Выберите домашнее задание:");
         return sendMessage;
     }
+
+    /**
+     * инлайновое меню вида дз
+     * @return SendMessage с инлайновыми кнопкими
+     */
+    public static SendMessage sendingHW() {
+        List<String> stringList = new ArrayList<>();
+        stringList.add("основное");
+        stringList.add("дополнительное");
+
+        List<String> stringId = new ArrayList<>();
+        stringId.add("main");
+        stringId.add("other");
+
+        SendMessage sendMessage = new SendMessage();
+        sendMessage.setReplyMarkup(TelegramButton.createInlineButton(stringList, stringId));
+        sendMessage.setText("Выберите вид домашнего задания:");
+        return sendMessage;
+    }
+
+    /**
+     * Меню выбора обычного дз
+     * @return инлайновые кнопки
+     */
+    public static InlineKeyboardMarkup sendingAdminMainHW(){
+        List<String> stringList = new ArrayList<>();
+        stringList.add("дз1");
+        stringList.add("дз2");
+        stringList.add("дз3");
+
+        List<String> stringId = new ArrayList<>();
+        stringId.add("hw1");
+        stringId.add("hw2");
+        stringId.add("hw3");
+
+        return TelegramButton.createInlineButton(stringList, stringId);
+    }
+
+    /**
+     * Меню выбора дополнительного дз
+     * @return инлайновые кнопки
+     */
+    public static InlineKeyboardMarkup sendingAdminOtherHW(){
+        List<String> stringList = new ArrayList<>();
+        stringList.add("текст");
+        stringList.add("текст и видео");
+        stringList.add("текст и картинка");
+
+        List<String> stringId = new ArrayList<>();
+        stringId.add("text");
+        stringId.add("textVideo");
+        stringId.add("textImage");
+
+        return TelegramButton.createInlineButton(stringList, stringId);
+    }
+
+
 }

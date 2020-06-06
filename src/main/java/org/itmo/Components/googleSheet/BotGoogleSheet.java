@@ -37,7 +37,7 @@ public class BotGoogleSheet {
 
     private static final String APPLICATION_NAME = "Google Sheet";
 
-    private int idRow = 2;
+    final private int idRow = 2;
 
     public static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
     private static final String TOKENS_DIRECTORY_PATH = "tokens";
@@ -150,23 +150,22 @@ public class BotGoogleSheet {
         if (mainTableList == null || mainTableList.isEmpty()){
             log.error("Основная таблица пустая!");
         } else {
+            int indexRow = idRow;
             for (List row : mainTableList) {
                 String name = correctUsername((String) row.get(4));
                 if (name.equals(username)){
-                    userData.put("nameSheet", (String) row.get(0));
-                    userData.put("row", String.valueOf(idRow));
 
                     try {
                         List<List<Object>> list = new ArrayList();
                         list.add(row.subList(0, 5));
-                        addWriter(idRow, correct_num(list));
+                        indexRow = addWriter(indexRow, correct_num(list));
+                        userData.put("nameSheet", (String) row.get(0));
+                        userData.put("row", String.valueOf(indexRow));
 
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    } catch (GeneralSecurityException e) {
+                    } catch (IOException|GeneralSecurityException e) {
                         e.printStackTrace();
                     }
-                    idRow++;
+
                     log.info("Пополнение в userData");
                     break;
                 }
@@ -279,7 +278,7 @@ public class BotGoogleSheet {
     }
 
 
-    public void addWriter(int idRow, List<List<Object>> values) throws IOException, GeneralSecurityException {
+    public int addWriter(int idRow, List<List<Object>> values) throws IOException, GeneralSecurityException {
         System.out.println(values);
         String range = makeRange(idRow);
         final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
@@ -296,6 +295,7 @@ public class BotGoogleSheet {
                 .setIncludeValuesInResponse(true)
                 .execute();
         idRow++;
+        return idRow;
     }
 
     private static String correct_column(int id){

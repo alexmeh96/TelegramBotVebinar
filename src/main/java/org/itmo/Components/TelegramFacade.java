@@ -28,13 +28,12 @@ import java.io.*;
 import java.security.GeneralSecurityException;
 import java.util.*;
 
-//обработка сообщения
+/**
+ * Класс обработки сообщений от чатов и создание ответов им
+ */
 @SuppressWarnings("ALL")
 @Slf4j
 @Component
-/**
- * обработка сообщений от чатов и создание ответов им
- */
 public class TelegramFacade {
     private static final org.apache.logging.log4j.Logger log = org.apache.logging.log4j.LogManager.getLogger(TelegramFacade.class);
 
@@ -142,12 +141,12 @@ public class TelegramFacade {
                 break;
             case "Связаться с администратором":    //STUDENT
                 telegramUsers.getUserMap().get(username).statusFalse();   //сбрасываем состояние студента
-                sendMessage.setText(botMessage.messageAdmin());
+                sendMessage.setChatId(chatId).setText(botMessage.messageAdmin());
                 break;
             case "Задать вопрос ведущему":   //STUDENT
                 telegramUsers.getUserMap().get(username).setSendQuestion(true);
                 telegramUsers.getUserMap().get(username).setSendHomework(false);
-                sendMessage.setText("Введите ваш вопрос");
+                sendMessage.setChatId(chatId).setText("Введите ваш вопрос");
                 break;
             case "Назад":   //STUDENT
                 telegramUsers.getUserMap().get(username).statusFalse();
@@ -160,7 +159,7 @@ public class TelegramFacade {
                 break;
             case "Отправить домашнее задание":  //STUDENT
                 telegramUsers.getUserMap().get(username).statusFalse();
-                sendMessage = TelegramButton.sendingHW();
+                sendMessage = TelegramButton.sendingMainHW();
                 sendMessage.setChatId(chatId);
                 break;
             case "Сделать рассылку дз":   //ADMIN
@@ -182,7 +181,7 @@ public class TelegramFacade {
                 break;
             case "Сделать рассылку":  //ADMIN
                 telegramUsers.getAdminMap().get(username).statusFalse();
-                sendMessage = TelegramButton.sending();
+                sendMessage = TelegramButton.sendingChoose();
                 sendMessage.setChatId(chatId);
                 break;
             default:
@@ -194,9 +193,17 @@ public class TelegramFacade {
                     String text = update.getMessage().getText();
                     user.getListQuestion().add(new Question(text, date));  //добавляеем студенту вопрос
 
-                    sendMessage.setText("Ваш вопрос отправлен!");
+                    sendMessage.setChatId(chatId).setText("Ваш вопрос отправлен!");
                     break;
                 }
+
+                if(telegramUsers.getAdminMap().containsKey(username) && telegramUsers.getAdminMap().get(username).isSendOtherHW()){
+                    String num = update.getMessage().getText();
+                    telegramUsers.getAdminMap().get(username).setOtherHW(num);
+                    sendMessage.setChatId(chatId).setText("Загрузите файл с текстом");
+                    break;
+                }
+
                 sendMessage.setChatId(chatId).setText("Извините, но я вас не понимаю!");
                 break;
         }
@@ -216,41 +223,83 @@ public class TelegramFacade {
 
         log.info("{} = {}", username, telegramUsers.getUserMap().get(username));
 
-        //Если это студент и он должен отправить дз
-        if (telegramUsers.getUserMap().containsKey(username) && telegramUsers.getUserMap().get(username).isSendHomework()) {
+        //Если это студент
+        if (telegramUsers.getUserMap().containsKey(username)) {
             User user = telegramUsers.getUserMap().get(username);
-            long chatId = update.getMessage().getChatId();
-            SendMessage sendMessage = new SendMessage();
-            sendMessage.setChatId(chatId);
 
-            user.statusFalse();
+                String caption = update.getMessage().getCaption();
+                System.out.println(caption);
+                if (caption!=null && caption.toLowerCase().indexOf("#день") == 0) {
+                    String num = caption.substring(5);
 
-            mainTelegramBot.execute(sendMessage.setText("домашнее задание " + user.getNumFile() + " отправляется!"));
+                    long chatId = update.getMessage().getChatId();
+                    SendMessage sendMessage = new SendMessage();
+                    sendMessage.setChatId(chatId);
 
-            String fileId = update.getMessage().getDocument().getFileId();   //id файда отправленного студентом
-            String fileName = update.getMessage().getDocument().getFileName();   //имя файла отправленного студентом
-            File userFolder = user.getUserDirectory();  //получаем студенческую папку
+                    user.statusFalse();
 
-            boolean sendHW = false;  //флаг проверки успешной отправки файла
-            try (InputStream inputStream = telegramBotFile.getStreamFile(fileId)) {
-                sendHW = telegramBotGoogleDrive.sendHomework(  //возвращает true если файл был успешно отправлен
-                        inputStream,
-                        fileName,
-                        "Домашнее задание " + user.getNumFile(),
-                        userFolder);
+                    mainTelegramBot.execute(sendMessage.setText("дополнительное домашнее задание " + caption + " отправляется!"));
 
-            } catch (Exception e) {
-                e.getStackTrace();
+                    String fileId = update.getMessage().getDocument().getFileId();   //id файда отправленного студентом
+                    String fileName = update.getMessage().getDocument().getFileName();   //имя файла отправленного студентом
+                    File userFolder = user.getUserDirectory();  //получаем студенческую папку
+
+                    boolean sendHW = false;  //флаг проверки успешной отправки файла
+                    try (InputStream inputStream = telegramBotFile.getStreamFile(fileId)) {
+                        sendHW = telegramBotGoogleDrive.sendHomework(  //возвращает true если файл был успешно отправлен
+                                inputStream,
+                                fileName,
+                                "Доролнительное домашнее задание " + num,
+                                userFolder);
+
+                    } catch (Exception e) {
+                        e.getStackTrace();
+                        return sendMessage.setText("Не удалось отправить дополнительное домашнее задание!");
+                    }
+
+                    if (sendHW) {  //если дз было успешно отправлено студентом
+                        Date date = new Date(update.getMessage().getDate() * 1000l);    //дата отправки дз студентом
+                        String text = botMessage.cashOtherHW(telegramUsers, user, date, num);    //получение сообщения успешной отправки дз и изменение монет в таблице
+                        return sendMessage.setText(text);
+                    }
+
+                    return sendMessage.setText("Не удалось отправить дополнительное домашнее задание!");
+                }
+            //если студент должен отправить дз
+            if (user.isSendHomework()) {
+                long chatId = update.getMessage().getChatId();
+                SendMessage sendMessage = new SendMessage();
+                sendMessage.setChatId(chatId);
+
+                user.statusFalse();
+
+                mainTelegramBot.execute(sendMessage.setText("домашнее задание " + user.getNumFile() + " отправляется!"));
+
+                String fileId = update.getMessage().getDocument().getFileId();   //id файда отправленного студентом
+                String fileName = update.getMessage().getDocument().getFileName();   //имя файла отправленного студентом
+                File userFolder = user.getUserDirectory();  //получаем студенческую папку
+
+                boolean sendHW = false;  //флаг проверки успешной отправки файла
+                try (InputStream inputStream = telegramBotFile.getStreamFile(fileId)) {
+                    sendHW = telegramBotGoogleDrive.sendHomework(  //возвращает true если файл был успешно отправлен
+                            inputStream,
+                            fileName,
+                            "Домашнее задание " + user.getNumFile(),
+                            userFolder);
+
+                } catch (Exception e) {
+                    e.getStackTrace();
+                    return sendMessage.setText("Не удалось отправить домашнее задание!");
+                }
+
+                if (sendHW) {  //если дз было успешно отправлено студентом
+                    Date date = new Date(update.getMessage().getDate() * 1000l);    //дата отправки дз студентом
+                    String text = botMessage.cashHW(telegramUsers, user, date);    //получение сообщения успешной отправки дз и изменение монет в таблице
+                    return sendMessage.setText(text);
+                }
+
                 return sendMessage.setText("Не удалось отправить домашнее задание!");
             }
-
-            if (sendHW) {  //если дз было успешно отправлено студентом
-                Date date = new Date(update.getMessage().getDate() * 1000l);    //дата отправки дз студентом
-                String text = botMessage.cashHW(telegramUsers, user, date);    //получение сообщения успешной отправки дз и изменение монет в таблице
-                return sendMessage.setText(text);
-            }
-
-            return sendMessage.setText("Не удалось отправить домашнее задание!");
         }
 
         //если это админ и он загружает текст
@@ -269,6 +318,7 @@ public class TelegramFacade {
                 admin.statusFalse();
                 return sendMessage.setText("не удалось загрузить файл с текстом!");
             }
+
             if (admin.isUploadVideo()) {  //если админ должен загрузить ещё и видео
                 admin.setText(text);    //сохраняем загруженный текст в его состояние
                 if (admin.getHW().isEmpty())   //если номер домашнего задания для рассылки пуст
@@ -283,9 +333,18 @@ public class TelegramFacade {
                 sendMessage.setText(text);
                 //рассылка текста всем студентам которые есть в мэпе
                 try {
-                    for (User user : telegramUsers.getUserMap().values()) {
-                        sendMessage.setChatId(user.getChatId());
-                        mainTelegramBot.execute(sendMessage);
+                    if (admin.isVipSending()){
+                        for (User user : telegramUsers.getUserMap().values()) {
+                            if (user.getVip().equals("1")) {
+                                sendMessage.setChatId(user.getChatId());
+                                mainTelegramBot.execute(sendMessage);
+                            }
+                        }
+                    }else {
+                        for (User user : telegramUsers.getUserMap().values()) {
+                            sendMessage.setChatId(user.getChatId());
+                            mainTelegramBot.execute(sendMessage);
+                        }
                     }
                     //рассылка текста текущему админу
                     sendMessage.setChatId(chatId);
@@ -294,7 +353,13 @@ public class TelegramFacade {
                     e.printStackTrace();
                     admin.statusFalse();
                     return sendMessage.setChatId(chatId).setText("не удалось разослать текст!");
-
+                }
+                if (admin.isSendOtherHW()){
+                    Date date =  new Date(update.getMessage().getDate() * 1000l);  // дата рассылки доп дз админом
+                    telegramUsers.getMapDateOther().put(admin.getOtherHW(), date);  //добавляем номер доп дз с датой в мэп
+                    sendMessage.setText("домашнее задание " + admin.getHW() + " разослано успешно!");
+                    admin.statusFalse();
+                    return sendMessage.setChatId(chatId);
                 }
                 admin.statusFalse();
                 return sendMessage.setChatId(chatId).setText("рассылка текста прошла успешно!");
@@ -329,10 +394,20 @@ public class TelegramFacade {
 
                 mainTelegramBot.execute(sendMessage.setText("рассылка студентам началась!"));
                 try {
-                    for (User user : telegramUsers.getUserMap().values()) {
-                        sendVideo.setChatId(user.getChatId());
-                        mainTelegramBot.execute(sendVideo);
+                    if (admin.isVipSending()) {
+                        for (User user : telegramUsers.getUserMap().values()) {
+                            if (user.getVip().equals("1")) {
+                                sendVideo.setChatId(user.getChatId());
+                                mainTelegramBot.execute(sendVideo);
+                            }
+                        }
+                    }else {
+                        for (User user : telegramUsers.getUserMap().values()) {
+                            sendVideo.setChatId(user.getChatId());
+                            mainTelegramBot.execute(sendVideo);
+                        }
                     }
+
                     sendVideo.setChatId(chatId);
                     mainTelegramBot.execute(sendVideo);
                     file.delete();
@@ -350,14 +425,23 @@ public class TelegramFacade {
                 admin.statusFalse();
                 return sendMessage.setText("не удалось загрузить видео!");
             }
+            if (admin.isSendOtherHW()){
+                Date date =  new Date(update.getMessage().getDate() * 1000l);  // дата рассылки доп дз админом
+                telegramUsers.getMapDateOther().put(admin.getOtherHW(), date);  //добавляем номер доп дз с датой в мэп
+                sendMessage.setText("дополнительное домашнее задание " + admin.getOtherHW() + "разослано успешно!");
+                admin.statusFalse();
+                return sendMessage;
+            }
+
             if (admin.getHW().isEmpty()) {  //еслиадмин делает рассылку видео с текстом
                 admin.statusFalse();
                 return sendMessage.setText("текст с видео разосланы успешно!");
             } else {    //еслиадмин делает рассылку дз
                 Date date =  new Date(update.getMessage().getDate() * 1000l);  // дата рассылки дз админом
                 telegramUsers.getMapDate().put(admin.getHW(), date);  //добавляем номер дз с датой в мэп
+                sendMessage.setText("домашнее задание " + admin.getHW() + " разослано успешно!");
                 admin.statusFalse();
-                return sendMessage.setText("домашнее задание " + admin.getHW() + "разослано успешно!");
+                return sendMessage;
             }
 
         }
@@ -391,10 +475,20 @@ public class TelegramFacade {
 
                 mainTelegramBot.execute(sendMessage.setText("рассылка студентам началась!"));
                 try {
-                    for (User user : telegramUsers.getUserMap().values()) {
-                        sendPhoto.setChatId(user.getChatId());
-                        mainTelegramBot.execute(sendPhoto);
+                    if (admin.isVipSending()) {
+                        for (User user : telegramUsers.getUserMap().values()) {
+                            if (user.getVip().equals("1")) {
+                                sendPhoto.setChatId(user.getChatId());
+                                mainTelegramBot.execute(sendPhoto);
+                            }
+                        }
+                    } else {
+                        for (User user : telegramUsers.getUserMap().values()) {
+                            sendPhoto.setChatId(user.getChatId());
+                            mainTelegramBot.execute(sendPhoto);
+                        }
                     }
+
                     sendPhoto.setChatId(chatId);
                     mainTelegramBot.execute(sendPhoto);
                     file.delete();
@@ -410,10 +504,64 @@ public class TelegramFacade {
                 admin.statusFalse();
                 return sendMessage.setText("не удалось загрузить картинку!");
             }
+
+            if (admin.isSendOtherHW()) {
+                Date date = new Date(update.getMessage().getDate() * 1000l);  // дата рассылки доп дз админом
+                telegramUsers.getMapDateOther().put(admin.getOtherHW(), date);  //добавляем номер доп дз с датой в мэп
+                sendMessage.setText("дополнительное домашнее задание " + admin.getOtherHW() + " разослано успешно!");
+                admin.statusFalse();
+                return sendMessage;
+            }
+
             admin.statusFalse();
             return sendMessage.setText("текст с фото разосланы успешно!");
 
         }
+//        //Если это студент
+//        if (telegramUsers.getUserMap().containsKey(username)) {
+//            User user = telegramUsers.getUserMap().get(username);
+//
+//            String caption = update.getMessage().getCaption();
+//            System.out.println(caption);
+//            if (!caption.isEmpty() && caption.toLowerCase().indexOf("#день") == 0) {
+//                String num = caption.substring(5);
+//
+//                long chatId = update.getMessage().getChatId();
+//                SendMessage sendMessage = new SendMessage();
+//                sendMessage.setChatId(chatId);
+//
+//                user.statusFalse();
+//
+//                mainTelegramBot.execute(sendMessage.setText("дополнительное домашнее задание " + caption + " отправляется!"));
+//
+////                String fileId = update.getMessage().getPhoto().getFileId();   //id файда отправленного студентом
+////                String fileName = update.getMessage().getDocument().getFileName();   //имя файла отправленного студентом
+//                String fileId = update.getMessage().getPhoto().get(update.getMessage().getPhoto().size() - 1).getFileId();
+//                File userFolder = user.getUserDirectory();  //получаем студенческую папку
+//
+//                boolean sendHW = false;  //флаг проверки успешной отправки файла
+//                try (InputStream inputStream = telegramBotFile.getStreamFile(fileId)) {
+//                    java.io.File file = telegramBotFile.getFile(fileId);  //получаем файл изображения
+//                    sendHW = telegramBotGoogleDrive.sendHomework(  //возвращает true если файл был успешно отправлен
+//                            inputStream,
+//                            fileName,
+//                            "Доролнительное домашнее задание " + num,
+//                            userFolder);
+//
+//                } catch (Exception e) {
+//                    e.getStackTrace();
+//                    return sendMessage.setText("Не удалось отправить дополнительное домашнее задание!");
+//                }
+//
+//                if (sendHW) {  //если дз было успешно отправлено студентом
+//                    Date date = new Date(update.getMessage().getDate() * 1000l);    //дата отправки дз студентом
+//                    String text = botMessage.cashOtherHW(telegramUsers, user, date, num);    //получение сообщения успешной отправки дз и изменение монет в таблице
+//                    return sendMessage.setText(text);
+//                }
+//
+//                return sendMessage.setText("Не удалось отправить дополнительное домашнее задание!");
+//            }
+//        }
         return null;
     }
 
@@ -450,17 +598,39 @@ public class TelegramFacade {
                     admin.setUploadText(true);
                     admin.setUploadVideo(false);
                     admin.setUploadPhoto(false);
+                    if (admin.isSendOtherHW())
+                        return editMessageText.setText("Введите номер дз");
                     return editMessageText.setText("Загрузите файл с текстом");
                 case "textVideo":
                     admin.setUploadText(true);
                     admin.setUploadVideo(true);
                     admin.setUploadPhoto(false);
+                    if (admin.isSendOtherHW())
+                        return editMessageText.setText("Введите номер дз");
                     return editMessageText.setText("Загрузите файл с текстом");
                 case "textImage":
                     admin.setUploadText(true);
                     admin.setUploadPhoto(true);
                     admin.setUploadVideo(false);
+                    if (admin.isSendOtherHW())
+                        return editMessageText.setText("Введите номер дз");
                     return editMessageText.setText("Загрузите файл с текстом");
+                case "main":
+                    admin.statusFalse();
+                    return editMessageText.setText("Выберите основное домашнее задание:").setReplyMarkup(TelegramButton.sendingAdminMainHW());
+                case "other":
+                    admin.statusFalse();
+                    admin.setSendOtherHW(true);
+                    return editMessageText.setText("Выберите дополнительное домашнее задание:").setReplyMarkup(TelegramButton.sendingAdminOtherHW());
+                case "usual":
+                    admin.statusFalse();
+                    return editMessageText.setText("Выберите вид основной рассылки:").setReplyMarkup(TelegramButton.sending());
+                case "vip":
+                    admin.statusFalse();
+                    admin.setVipSending(true);
+                    return editMessageText.setText("Выберите вид vip рассылки:").setReplyMarkup(TelegramButton.sending());
+
+
             }
             return null;
         }

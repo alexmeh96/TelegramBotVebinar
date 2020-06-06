@@ -17,15 +17,16 @@ public class Admin {
     private boolean uploadPhoto;   //состояние загрузки изображения
     private String HW;     //номер домашнего задания для рассылки
     private String text;  //загруженный текст для рассылки
+    private String otherHW;  //номер дополнительного домашнего задания для рассылки
+    private boolean sendOtherHW;  //состояние отправки дополнительного дз
+    private boolean vipSending;
 
     public Admin(String name, Long chatId){
         this.name = name;
         this.chatId = chatId;
         text = "";
-        uploadText = false;
-        uploadVideo = false;
-        uploadPhoto = false;
         HW = "";
+        otherHW = "";
     }
 
     /**
@@ -37,6 +38,9 @@ public class Admin {
         uploadVideo=false;
         uploadPhoto=false;
         HW = "";
+        otherHW = "";
+        sendOtherHW = false;
+        vipSending = false;
     }
 
     @Override

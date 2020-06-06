@@ -37,5 +37,21 @@ public class BackgroundBot {
             }
         }
 
+        for (String num : telegramUsers.getMapDateOther().keySet()){
+            for (User user : telegramUsers.getUserMap().values()){
+                if ( !user.getSendOtherHW().contains(num)){
+
+                    SendMessage sendMessage = new SendMessage();
+                    sendMessage.setChatId(user.getChatId());
+                    sendMessage.setText("Вы ещё не сделали дополнительное домашнее задание " + num + "!");
+                    try {
+                        mainTelegramBot.execute(sendMessage);
+                    } catch (TelegramApiException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
+
     }
 }

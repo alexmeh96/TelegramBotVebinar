@@ -14,6 +14,9 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+/**
+ * Класс переопределяющий методы класса TelegramWebhookBot
+ */
 @SuppressWarnings("ALL")
 @Slf4j
 public class MainTelegramBot extends TelegramWebhookBot {

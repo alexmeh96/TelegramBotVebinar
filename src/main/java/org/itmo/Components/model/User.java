@@ -19,13 +19,16 @@ public class User {
     private String username;   //ник телеграма
     private String usernameSheet;   //имя
     private boolean sendHomework;  //состояние отправки дз
+    private boolean sendOtherHomework;  //состояние отправки дз
     private boolean sendQuestion;   //состояние отправки вопроса
     private File userDirectory;   //папка
     private String numFile;  //номер отправимого файла
     private Integer cash;    //количество монет
     private Set<String> sendHW = new TreeSet<>();    //номера отправленных домашек
+    private Set<String> sendOtherHW = new TreeSet<>();    //номера отправленных дополнительных домашек
     private String rowId;    //номер строки студента в созданной таблице
     private List<Question> listQuestion = new ArrayList<>();   //список вопросов
+    private String vip;
 
     public User(){}
 
@@ -34,10 +37,9 @@ public class User {
         this.username = username;
         this.usernameSheet = usernameSheet;
         this.userDirectory = file;
-        this.sendHomework = false;
-        this.sendQuestion = false;
         this.cash = 0;
         this.rowId = rowId;
+        this.vip = "0";
     }
 
     /**
@@ -45,6 +47,7 @@ public class User {
      */
     public void statusFalse(){
         sendHomework = false;
+        sendOtherHomework = false;
         sendQuestion = false;
     }
 

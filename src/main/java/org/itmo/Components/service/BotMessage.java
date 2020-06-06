@@ -13,10 +13,10 @@ import java.security.GeneralSecurityException;
 import java.util.*;
 import java.util.stream.Collectors;
 
-@Component
 /**
  * текстовые сообщения
  */
+@Component
 public class BotMessage {
 
     /**
@@ -67,13 +67,15 @@ public class BotMessage {
                 if (i==user.getListQuestion().size())
                     user.setListQuestion(new ArrayList<>());
                 else if (i>0){
-                    text = new StringBuilder("<b>@" + user.getUsername() + "</b>\n");
+                   // text = new StringBuilder("<b>@" + user.getUsername() + "</b>\n");
+                    text.append("<b>@").append(user.getUsername()).append("</b>\n");
                     user.setListQuestion(user.getListQuestion().subList(i, user.getListQuestion().size()));
                     for (Question qu : user.getListQuestion()) {
                         text.append(qu.toString());
                     }
                 }else{
-                    text = new StringBuilder("<b>@" + user.getUsername() + "</b>\n");
+                    //text = new StringBuilder("<b>@" + user.getUsername() + "</b>\n");
+                    text.append("<b>@").append(user.getUsername()).append("</b>\n");
                     for (Question qu : user.getListQuestion()) {
                         text.append(qu.toString());
                     }
@@ -97,18 +99,55 @@ public class BotMessage {
     public String cashHW(TelegramUsers telegramUsers, User user, Date date){
         String num = user.getNumFile();
         Date firstDate = new Date(date.getTime()- BotProperty.TIME_HW);
-        if(!user.getSendHW().contains(num) && telegramUsers.getMapDate().containsKey(num) && firstDate.before(telegramUsers.getMapDate().get(num))){
-            user.setCash(user.getCash() + 10);
+        if(!user.getSendHW().contains(num) && telegramUsers.getMapDate().containsKey(num)){
+            String text = "";
+            if (firstDate.before(telegramUsers.getMapDate().get(num))) {
+                user.setCash(user.getCash() + BotProperty.CASH_HW);
+                text = "Ваше домашнее задание отправлено вовремя!\nВы получаете " + BotProperty.CASH_HW + " монет!";
+            }else {
+                user.setCash(user.getCash() + BotProperty.MINUS_CASH_HW);
+                text = "Ваше домашнее задание отправлено невовремя!\nВы получаете " + BotProperty.MINUS_CASH_HW + " монет!";
+            }
             user.getSendHW().add(num);
-            System.out.println(num);
             try {
                 BotGoogleSheet.Update(BotProperty.SHEET_CASH_COL, user.getRowId(), String.valueOf(user.getCash()));
             } catch (IOException | GeneralSecurityException e) {
                 e.printStackTrace();
             }
-            return "Ваше домашнее задание отправлено вовремя!\nВы получаете 10 баллов!";
+            return text;
         }
         return "Ваше домашнее задание отправлено!";
+    }
+
+    /**
+     * изменение баллов в зависимости от даты отправки дополнительного дз студентом
+     * @param telegramUsers пользователи бота
+     * @param user студент отправивший дз
+     * @param date дата отправки дз
+     * @param num номер дополнительного дз
+     * @return текстовое сообщение
+     */
+    public String cashOtherHW(TelegramUsers telegramUsers, User user, Date date, String num){
+
+        Date firstDate = new Date(date.getTime() - BotProperty.TIME_HW);
+        if(!user.getSendOtherHW().contains(num) && telegramUsers.getMapDateOther().containsKey(num)){
+            String text = "";
+            if (firstDate.before(telegramUsers.getMapDateOther().get(num))) {
+                user.setCash(user.getCash() + BotProperty.CASH_OTHER_HW);
+                text = "Ваше дополнительное домашнее задание отправлено вовремя!\nВы получаете " + BotProperty.CASH_OTHER_HW + " монет!";
+            }else {
+                user.setCash(user.getCash() + BotProperty.MINUS_CASH_OTHER_HW);
+                text = "Ваше дополнительное домашнее задание отправлено невовремя!\nВы получаете " + BotProperty.MINUS_CASH_OTHER_HW + " монет!";
+            }
+            user.getSendOtherHW().add(num);
+            try {
+                BotGoogleSheet.Update(BotProperty.SHEET_CASH_COL, user.getRowId(), String.valueOf(user.getCash()));
+            } catch (IOException | GeneralSecurityException e) {
+                e.printStackTrace();
+            }
+            return text;
+        }
+        return "Ваше дополнительное домашнее задание отправлено!";
     }
 
     /**

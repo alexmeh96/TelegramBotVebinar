@@ -31,6 +31,8 @@ public class TelegramUsers {
 
     private Map<String, Date> mapDate = new HashMap<>();  //map номера домышки и даты её рассылки админом (key: номер дз, value: дата рассылки дз админом)
 
+    private Map<String, Date> mapDateOther = new HashMap<>();  //map номера дополнительной домышки и даты её рассылки админом (key: номер дз, value: дата рассылки дз админом)
+
     private Map<String, User> userMap= new HashMap<>();    //map студентов  (key: username, value: студент)
 
     private Map<String, Admin> adminMap= new HashMap<>();    //map админов   (key: username, value: админ)
@@ -64,7 +66,10 @@ public class TelegramUsers {
                     String usernameSheet = (String) lists.get(i).get(BotProperty.SHEET_NAME_COL);
                     String rowId = String.valueOf(i+2);
                     File folderDirectory = telegramBotGoogleDrive.activate(usernameSheet);
-                    userMap.put(username, new User(chat,username, usernameSheet, folderDirectory, rowId));
+                    User user = new User(chat,username, usernameSheet, folderDirectory, rowId);
+                    user.setCash( Integer.valueOf((String)lists.get(i).get(BotProperty.SHEET_CASH_COL)) );
+                    user.setVip( (String)lists.get(i).get(BotProperty.SHEET_TARIF_COL) );
+                    userMap.put(username, user);
                     adminMap.remove(username);
 
                     SendMessage sendMessage = TelegramButton.userMenu(BotMessage.welcomeMessage(usernameSheet));
@@ -75,28 +80,10 @@ public class TelegramUsers {
 
                 if (lists.get(i).get(BotProperty.SHEET_ROLE_COL).equals("0") && userMap.containsKey(username)){
                     userMap.get(username).setCash(  Integer.valueOf((String)lists.get(i).get(BotProperty.SHEET_CASH_COL)) );
+                    userMap.get(username).setVip(  (String)lists.get(i).get(BotProperty.SHEET_TARIF_COL) );
                 }
 
             }
-
-
-//            for (User user: userMap.values()){
-//                int rowId = Integer.parseInt(user.getRowId())-2;
-//
-//                user.setCash(  Integer.valueOf((String)lists.get(rowId).get(BotProperty.SHEET_CASH_COL)) );
-//
-//                if ( Integer.parseInt((String)lists.get(rowId).get(BotProperty.SHEET_ROLE_COL)) == 1){
-//                    adminMap.put(user.getUsername(), new Admin(user.getUsername(),user.getChatId()));
-//                }
-//            }
-//
-//            SendMessage sendMessage = TelegramButton.adminMenu();
-//
-//            for (Admin admin : adminMap.values()){
-//                userMap.remove(admin.getName());
-//                sendMessage.setChatId(admin.getChatId());
-//                mainTelegramBot.execute(sendMessage);
-//            }
 
         } catch (IOException | GeneralSecurityException e) {
             e.printStackTrace();
