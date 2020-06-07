@@ -17,7 +17,7 @@ public class BackgroundBot {
     @Autowired
     MainTelegramBot mainTelegramBot;
 
-    @Scheduled(initialDelay = 60 * 1000, fixedDelay = 20000)
+    @Scheduled(initialDelay = 60 * 1000, fixedDelay = 2 * 60 * 1000)
     public void doScheduledWork() {
 
         for (String num : telegramUsers.getMapDate().keySet()){
@@ -29,7 +29,7 @@ public class BackgroundBot {
                     if (user.getFailedHW().get(num) < 3) {
                         SendMessage sendMessage = new SendMessage();
                         sendMessage.setChatId(user.getChatId());
-                        sendMessage.setText("Вы ещё не сделали домашнее задание " + num + "!");
+                        sendMessage.setText("Вы ещё не сделали домашнее задание " + num + "‼️😡");
                         try {
                             mainTelegramBot.execute(sendMessage);
                         } catch (TelegramApiException e) {
@@ -50,7 +50,7 @@ public class BackgroundBot {
                     if (user.getFailedOtherHW().get(num) < 3) {
                         SendMessage sendMessage = new SendMessage();
                         sendMessage.setChatId(user.getChatId());
-                        sendMessage.setText("Вы ещё не сделали дополнительное домашнее задание " + num + "!");
+                        sendMessage.setText("Вы ещё не сделали дополнительное домашнее задание " + num + "‼️😡");
                         try {
                             mainTelegramBot.execute(sendMessage);
                         } catch (TelegramApiException e) {

@@ -103,20 +103,20 @@ public class TelegramButton {
      */
     public static SendMessage userMenu(String message){
         List<String> stringList = new ArrayList<>();
-        stringList.add("Отправить домашнее задание");
-        stringList.add("Связаться со службой поддержки");
-        stringList.add("Пароль от личного кабинета");
-        stringList.add("Рейтинг студентов");
+        stringList.add("Отправить домашнее задание📚");
+        stringList.add("Помощь🆘");
+        stringList.add("Пароль от личного кабинета🤫");
+        stringList.add("Рейтинг студентов🥇");
 
         return TelegramButton.createButton(message, stringList);
     }
 
     public static SendPhoto userMenuPhoto(){
         List<String> stringList = new ArrayList<>();
-        stringList.add("Отправить домашнее задание");
-        stringList.add("Связаться со службой поддержки");
-        stringList.add("Пароль от личного кабинета");
-        stringList.add("Рейтинг студентов");
+        stringList.add("Отправить домашнее задание📚");
+        stringList.add("Помощь🆘");
+        stringList.add("Пароль от личного кабинета🤫");
+        stringList.add("Рейтинг студентов🥇");
 
         return TelegramButton.createButtonPhoto(stringList);
     }
@@ -177,15 +177,17 @@ public class TelegramButton {
         stringList.add("дз1");
         stringList.add("дз2");
         stringList.add("дз3");
+        stringList.add("дз4");
 
         List<String> stringId = new ArrayList<>();
         stringId.add("hw1");
         stringId.add("hw2");
         stringId.add("hw3");
+        stringId.add("hw4");
 
         SendMessage sendMessage = new SendMessage();
         sendMessage.setReplyMarkup(TelegramButton.createInlineButton(stringList, stringId));
-        sendMessage.setText("Выберите домашнее задание:");
+        sendMessage.setText("Выберите домашнее задание⬇️:");
         return sendMessage;
     }
 
@@ -217,11 +219,13 @@ public class TelegramButton {
         stringList.add("дз1");
         stringList.add("дз2");
         stringList.add("дз3");
+        stringList.add("дз4");
 
         List<String> stringId = new ArrayList<>();
         stringId.add("hw1");
         stringId.add("hw2");
         stringId.add("hw3");
+        stringId.add("hw4");
 
         return TelegramButton.createInlineButton(stringList, stringId);
     }

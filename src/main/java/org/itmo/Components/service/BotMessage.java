@@ -28,7 +28,7 @@ public class BotMessage {
      * @return текстовое сообщение
      */
     public String messageAdmin(){
-        return "Напишите нашему\nадминистратору " + BotProperty.ADMIN;
+        return "Напишите нашему администратору " + BotProperty.ADMIN +"😉\n Не сомневайтесь, он вам поможет🦾";
     }
 
     /**
@@ -37,8 +37,8 @@ public class BotMessage {
      * @return текстовое сообщение
      */
     public static String welcomeMessage(String usernameSheets) {
-        return "Привет, " + usernameSheets + "! Я - твой бот-помощник в игре \"Метод Плесовских\". \n" +
-                "Я 24/7 на связи, поэтому ты в любой момент можете обратиться ко мне со своим вопросом.";
+        return "Привет, " + usernameSheets + "! Я - твой бот-помощник в игре \"Метод Плесовских\"🎮 \n" +
+                "Я 24/7 на связи, поэтому ты в любой момент можете обратиться ко мне со своим вопросом🤖";
     }
 
     /**
@@ -46,8 +46,8 @@ public class BotMessage {
      * @return текстовое сообщение
      */
     public String negativeMessage(){
-        return "Привет, вы еще не зарегистрировались на курс \n" +
-                "Если вы регистрировались на курс, напишите нашему администратору " + BotProperty.ADMIN;
+        return "Привет, вы еще не зарегистрировались на курс🤨\n" +
+                "Если вы регистрировались на курс, напишите нашему администратору 👉🏻 " + BotProperty.ADMIN;
     }
 
     /**
@@ -107,7 +107,7 @@ public class BotMessage {
                 SendPhoto sendPhoto = new SendPhoto();   //получаем меню студента
                 java.io.File file = new java.io.File("src/main/resources/img/win" + num + ".png");
                 sendPhoto.setPhoto(file);
-                String text = "Ваше домашнее задание отправлено вовремя!\nВы получаете " + BotProperty.CASH_HW + " монет!";
+                String text = "Ваше домашнее задание отправлено вовремя!👍🏻\nВы получаете " + BotProperty.CASH_HW + " монет💰\nСейчас у вас "+ user.getCash() + " монет!";
                 sendPhoto.setCaption(text);
                 sendPhoto.setChatId(user.getChatId());
                 try {
@@ -129,7 +129,7 @@ public class BotMessage {
                 sendPhoto.setPhoto(file);
                 if ((user.getCash() + BotProperty.MINUS_CASH_HW) >= 0)
                     user.setCash(user.getCash() + BotProperty.MINUS_CASH_HW);
-                String text = "Ваше домашнее задание отправлено невовремя!\nВы получаете " + BotProperty.MINUS_CASH_HW + " монет!";
+                String text = "Ваше домашнее задание отправлено невовремя⌛️\nВы потеряли " + BotProperty.MINUS_CASH_HW + " монет😿\nСейчас у вас "+ user.getCash() + " монет!";
                 sendPhoto.setCaption(text).setChatId(user.getChatId());
                 try {
                     mainTelegramBot.execute(sendPhoto);
@@ -145,7 +145,7 @@ public class BotMessage {
                 return null;
             }
         }
-        return "Вы уже отправляли домашнее задание " + num + "!";
+        return "Не торопитесь, домашнее задание " + num + " еще не отправляли❗️";
     }
 
     /**
@@ -166,7 +166,7 @@ public class BotMessage {
                 java.io.File file = new java.io.File("src/main/resources/img/win.png");
                 sendPhoto.setPhoto(file);
                 user.setCash(user.getCash() + BotProperty.CASH_OTHER_HW);
-                String text = "Ваше дополнительное домашнее задание отправлено вовремя!\nВы получаете " + BotProperty.CASH_OTHER_HW + " монет!";
+                String text = "Ваше дополнительное домашнее задание отправлено вовремя!🥳\nВы получаете " + BotProperty.CASH_OTHER_HW + " монет💰\nСейчас у вас "+ user.getCash() + " монет!";
                 sendPhoto.setCaption(text).setChatId(user.getChatId());
                 try {
                     mainTelegramBot.execute(sendPhoto);
@@ -186,7 +186,7 @@ public class BotMessage {
                 sendPhoto.setPhoto(file);
                 if ((user.getCash() + BotProperty.MINUS_CASH_OTHER_HW) >= 0)
                     user.setCash(user.getCash() + BotProperty.MINUS_CASH_OTHER_HW);
-                String text = "Ваше дополнительное домашнее задание отправлено невовремя!\nВы получаете " + BotProperty.MINUS_CASH_OTHER_HW + " монет!";
+                String text = "Ваше дополнительное домашнее задание отправлено невовремя!🚫\nВы потеряли " + BotProperty.MINUS_CASH_OTHER_HW + " монет👎🏻\nСейчас у вас "+ user.getCash() + " монет!";
                 sendPhoto.setCaption(text).setChatId(user.getChatId());
                 try {
                     mainTelegramBot.execute(sendPhoto);
@@ -202,7 +202,7 @@ public class BotMessage {
                 return null;
             }
         }
-        return "Ваше дополнительное домашнее задание отправлено!";
+        return "Не торопитесь, ежедневное домашнее задание " + num +  " еще не отправляли❗️";
     }
 
     /**
