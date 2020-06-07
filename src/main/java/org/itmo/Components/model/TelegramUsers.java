@@ -47,6 +47,7 @@ public class TelegramUsers {
         mainTelegramBot.execute(new SendMessage().setChatId(chatId).setText("Обновление студентов началось!"));
         try {
             List<List<Object>> lists = BotGoogleSheet.Reader();
+            System.out.println(lists);
 
             for (int i = 0; i < lists.size() ; i++) {
                 String username = (String) lists.get(i).get(BotProperty.SHEET_USERNAME_COL);
@@ -81,6 +82,7 @@ public class TelegramUsers {
                 if (lists.get(i).get(BotProperty.SHEET_ROLE_COL).equals("0") && userMap.containsKey(username)){
                     userMap.get(username).setCash(  Integer.valueOf((String)lists.get(i).get(BotProperty.SHEET_CASH_COL)) );
                     userMap.get(username).setVip(  (String)lists.get(i).get(BotProperty.SHEET_TARIF_COL) );
+                    System.out.println(userMap);
                 }
 
             }

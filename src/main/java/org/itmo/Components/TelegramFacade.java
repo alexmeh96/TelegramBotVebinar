@@ -249,7 +249,7 @@ public class TelegramFacade {
                         sendHW = telegramBotGoogleDrive.sendHomework(  //возвращает true если файл был успешно отправлен
                                 inputStream,
                                 fileName,
-                                "Доролнительное домашнее задание " + num,
+                                "#день" + num,
                                 userFolder);
 
                     } catch (Exception e) {
@@ -534,14 +534,11 @@ public class TelegramFacade {
 
                 mainTelegramBot.execute(sendMessage.setText("дополнительное домашнее задание " + caption + " отправляется!"));
 
-//                String fileId = update.getMessage().getPhoto().getFileId();   //id файда отправленного студентом
-//                String fileName = update.getMessage().getDocument().getFileName();   //имя файла отправленного студентом
                 String fileId = update.getMessage().getPhoto().get(update.getMessage().getPhoto().size() - 1).getFileId();
                 File userFolder = user.getUserDirectory();  //получаем студенческую папку
 
                 boolean sendHW = false;  //флаг проверки успешной отправки файла
                 try (InputStream inputStream = telegramBotFile.getStreamFile(fileId)) {
-                 //   java.io.File file = telegramBotFile.getFile(fileId);  //получаем файл изображения
                     String fileName = telegramBotFile.getPathFile(fileId);
                     sendHW = telegramBotGoogleDrive.sendHomework(  //возвращает true если файл был успешно отправлен
                             inputStream,

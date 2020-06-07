@@ -24,7 +24,7 @@ public class BotProperty {
 
     public static final Long TIME_HW = 120_000L;
 
-    public static final int CASH_HW = 0;
+    public static final int CASH_HW = 5;
     public static final int CASH_OTHER_HW = 1;
 
     public static final int MINUS_CASH_HW = -5;

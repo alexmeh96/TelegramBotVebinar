@@ -17,7 +17,7 @@ public class BackgroundBot {
     @Autowired
     MainTelegramBot mainTelegramBot;
 
-    @Scheduled(cron="*/60 * * * * *", zone="Europe/Moscow")
+    @Scheduled(cron="* */4 * * * *", zone="Europe/Moscow")
     public void doScheduledWork() {
         System.out.println("method");
 
