@@ -4,9 +4,12 @@ import org.itmo.Components.googleSheet.BotGoogleSheet;
 import org.itmo.Components.model.Question;
 import org.itmo.Components.model.TelegramUsers;
 import org.itmo.Components.model.User;
+import org.itmo.MainTelegramBot;
 import org.itmo.config.BotProperty;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
+import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
@@ -18,7 +21,8 @@ import java.util.stream.Collectors;
  */
 @Component
 public class BotMessage {
-
+    @Autowired
+    private MainTelegramBot mainTelegramBot;
     /**
      * просьба написать админу
      * @return текстовое сообщение
@@ -67,15 +71,13 @@ public class BotMessage {
                 if (i==user.getListQuestion().size())
                     user.setListQuestion(new ArrayList<>());
                 else if (i>0){
-                   // text = new StringBuilder("<b>@" + user.getUsername() + "</b>\n");
-                    text.append("<b>@").append(user.getUsername()).append("</b>\n");
+                    text.append("<b>").append(user.getUsernameSheet()).append("</b>\n");
                     user.setListQuestion(user.getListQuestion().subList(i, user.getListQuestion().size()));
                     for (Question qu : user.getListQuestion()) {
                         text.append(qu.toString());
                     }
                 }else{
-                    //text = new StringBuilder("<b>@" + user.getUsername() + "</b>\n");
-                    text.append("<b>@").append(user.getUsername()).append("</b>\n");
+                    text.append("<b>").append(user.getUsernameSheet()).append("</b>\n");
                     for (Question qu : user.getListQuestion()) {
                         text.append(qu.toString());
                     }
@@ -100,23 +102,50 @@ public class BotMessage {
         String num = user.getNumFile();
         Date firstDate = new Date(date.getTime()- BotProperty.TIME_HW);
         if(!user.getSendHW().contains(num) && telegramUsers.getMapDate().containsKey(num)){
-            String text = "";
             if (firstDate.before(telegramUsers.getMapDate().get(num))) {
                 user.setCash(user.getCash() + BotProperty.CASH_HW);
-                text = "Ваше домашнее задание отправлено вовремя!\nВы получаете " + BotProperty.CASH_HW + " монет!";
+                SendPhoto sendPhoto = new SendPhoto();   //получаем меню студента
+                java.io.File file = new java.io.File("src/main/resources/img/win" + num + ".png");
+                sendPhoto.setPhoto(file);
+                String text = "Ваше домашнее задание отправлено вовремя!\nВы получаете " + BotProperty.CASH_HW + " монет!";
+                sendPhoto.setCaption(text);
+                sendPhoto.setChatId(user.getChatId());
+                try {
+                    mainTelegramBot.execute(sendPhoto);
+                } catch (TelegramApiException e) {
+                    e.printStackTrace();
+                }
+                user.getSendHW().add(num);
+                try {
+                    BotGoogleSheet.Update(BotProperty.SHEET_CASH_COL, user.getRowId(), String.valueOf(user.getCash()));
+                } catch (IOException | GeneralSecurityException e) {
+                    e.printStackTrace();
+                }
+                return null;
+
             }else {
-                user.setCash(user.getCash() + BotProperty.MINUS_CASH_HW);
-                text = "Ваше домашнее задание отправлено невовремя!\nВы получаете " + BotProperty.MINUS_CASH_HW + " монет!";
+                SendPhoto sendPhoto = new SendPhoto();   //получаем меню студента
+                java.io.File file = new java.io.File("src/main/resources/img/fail1.png");
+                sendPhoto.setPhoto(file);
+                if ((user.getCash() + BotProperty.MINUS_CASH_HW) >= 0)
+                    user.setCash(user.getCash() + BotProperty.MINUS_CASH_HW);
+                String text = "Ваше домашнее задание отправлено невовремя!\nВы получаете " + BotProperty.MINUS_CASH_HW + " монет!";
+                sendPhoto.setCaption(text).setChatId(user.getChatId());
+                try {
+                    mainTelegramBot.execute(sendPhoto);
+                } catch (TelegramApiException e) {
+                    e.printStackTrace();
+                }
+                user.getSendHW().add(num);
+                try {
+                    BotGoogleSheet.Update(BotProperty.SHEET_CASH_COL, user.getRowId(), String.valueOf(user.getCash()));
+                } catch (IOException | GeneralSecurityException e) {
+                    e.printStackTrace();
+                }
+                return null;
             }
-            user.getSendHW().add(num);
-            try {
-                BotGoogleSheet.Update(BotProperty.SHEET_CASH_COL, user.getRowId(), String.valueOf(user.getCash()));
-            } catch (IOException | GeneralSecurityException e) {
-                e.printStackTrace();
-            }
-            return text;
         }
-        return "Ваше домашнее задание отправлено!";
+        return "Вы уже отправляли домашнее задание " + num + "!";
     }
 
     /**
@@ -129,23 +158,49 @@ public class BotMessage {
      */
     public String cashOtherHW(TelegramUsers telegramUsers, User user, Date date, String num){
 
-        Date firstDate = new Date(date.getTime() - BotProperty.TIME_HW);
+        Date firstDate = new Date(date.getTime() - BotProperty.TIME_OTHER_HW);
         if(!user.getSendOtherHW().contains(num) && telegramUsers.getMapDateOther().containsKey(num)){
-            String text = "";
+
             if (firstDate.before(telegramUsers.getMapDateOther().get(num))) {
+                SendPhoto sendPhoto = new SendPhoto();   //получаем меню студента
+                java.io.File file = new java.io.File("src/main/resources/img/win.png");
+                sendPhoto.setPhoto(file);
                 user.setCash(user.getCash() + BotProperty.CASH_OTHER_HW);
-                text = "Ваше дополнительное домашнее задание отправлено вовремя!\nВы получаете " + BotProperty.CASH_OTHER_HW + " монет!";
+                String text = "Ваше дополнительное домашнее задание отправлено вовремя!\nВы получаете " + BotProperty.CASH_OTHER_HW + " монет!";
+                sendPhoto.setCaption(text).setChatId(user.getChatId());
+                try {
+                    mainTelegramBot.execute(sendPhoto);
+                } catch (TelegramApiException e) {
+                    e.printStackTrace();
+                }
+                user.getSendOtherHW().add(num);
+                try {
+                    BotGoogleSheet.Update(BotProperty.SHEET_CASH_COL, user.getRowId(), String.valueOf(user.getCash()));
+                } catch (IOException | GeneralSecurityException e) {
+                    e.printStackTrace();
+                }
+                return null;
             }else {
-                user.setCash(user.getCash() + BotProperty.MINUS_CASH_OTHER_HW);
-                text = "Ваше дополнительное домашнее задание отправлено невовремя!\nВы получаете " + BotProperty.MINUS_CASH_OTHER_HW + " монет!";
+                SendPhoto sendPhoto = new SendPhoto();   //получаем меню студента
+                java.io.File file = new java.io.File("src/main/resources/img/fail2.png");
+                sendPhoto.setPhoto(file);
+                if ((user.getCash() + BotProperty.MINUS_CASH_OTHER_HW) >= 0)
+                    user.setCash(user.getCash() + BotProperty.MINUS_CASH_OTHER_HW);
+                String text = "Ваше дополнительное домашнее задание отправлено невовремя!\nВы получаете " + BotProperty.MINUS_CASH_OTHER_HW + " монет!";
+                sendPhoto.setCaption(text).setChatId(user.getChatId());
+                try {
+                    mainTelegramBot.execute(sendPhoto);
+                } catch (TelegramApiException e) {
+                    e.printStackTrace();
+                }
+                user.getSendOtherHW().add(num);
+                try {
+                    BotGoogleSheet.Update(BotProperty.SHEET_CASH_COL, user.getRowId(), String.valueOf(user.getCash()));
+                } catch (IOException | GeneralSecurityException e) {
+                    e.printStackTrace();
+                }
+                return null;
             }
-            user.getSendOtherHW().add(num);
-            try {
-                BotGoogleSheet.Update(BotProperty.SHEET_CASH_COL, user.getRowId(), String.valueOf(user.getCash()));
-            } catch (IOException | GeneralSecurityException e) {
-                e.printStackTrace();
-            }
-            return text;
         }
         return "Ваше дополнительное домашнее задание отправлено!";
     }
@@ -161,7 +216,7 @@ public class BotMessage {
         StringBuilder result = new StringBuilder();
 
         for (User user : userList){
-            result.append(user.getUsername()).append(" ").append(user.getCash()).append("\n");
+            result.append(user.getUsernameSheet()).append(" ").append(user.getCash()).append("\n");
         }
 
         return result.toString();

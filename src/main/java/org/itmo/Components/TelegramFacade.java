@@ -94,14 +94,22 @@ public class TelegramFacade {
                 if(!telegramUsers.getUserMap().containsKey(username)){    //если пользователя нет в мэпе студентов
                     Map<String, String> userData = botGoogleSheet.findUser(username);  //получаем map данных из главной таблицы по имени пользователя
                     if(!userData.isEmpty()){   //если map данных не пуст
+                        SendPhoto sendPhoto = TelegramButton.userMenuPhoto();   //получаем меню студента
+                        java.io.File file = new java.io.File("src/main/resources/img/start.png");
+                        sendPhoto.setPhoto(file);
                         String message = botMessage.welcomeMessage(userData.get("nameSheet"));  //получаем приветствкнное сообщение студента
-                        sendMessage = TelegramButton.userMenu(message);   //получаем меню студента
-                        sendMessage.setChatId(chatId);
+                        sendPhoto.setCaption(message).setChatId(chatId);
 
                         File folderDirectory = telegramBotGoogleDrive.activate(userData.get("nameSheet"));  //получаем директорию студента
 
                         User user = new User(chatId, username, userData.get("nameSheet"), folderDirectory, userData.get("row"));  //создаём студента
                         telegramUsers.getUserMap().put(username, user);  //добавляем студента в мэп студентов
+                        try {
+                            mainTelegramBot.execute(sendPhoto);
+                        } catch (TelegramApiException e) {
+                            e.printStackTrace();
+                        }
+                        return null;
 
                     }else {   //если map данных пуст
                         sendMessage.setText(botMessage.negativeMessage());  //негативное сообщение
@@ -295,6 +303,7 @@ public class TelegramFacade {
                 if (sendHW) {  //если дз было успешно отправлено студентом
                     Date date = new Date(update.getMessage().getDate() * 1000l);    //дата отправки дз студентом
                     String text = botMessage.cashHW(telegramUsers, user, date);    //получение сообщения успешной отправки дз и изменение монет в таблице
+                    if (text == null) return null;
                     return sendMessage.setText(text);
                 }
 
@@ -554,6 +563,7 @@ public class TelegramFacade {
                 if (sendHW) {  //если дз было успешно отправлено студентом
                     Date date = new Date(update.getMessage().getDate() * 1000l);    //дата отправки дз студентом
                     String text = botMessage.cashOtherHW(telegramUsers, user, date, num);    //получение сообщения успешной отправки дз и изменение монет в таблице
+                    if (text == null) return null;
                     return sendMessage.setText(text);
                 }
 

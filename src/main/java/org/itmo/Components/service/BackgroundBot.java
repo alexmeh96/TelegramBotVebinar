@@ -17,21 +17,25 @@ public class BackgroundBot {
     @Autowired
     MainTelegramBot mainTelegramBot;
 
-    @Scheduled(cron="* */4 * * * *", zone="Europe/Moscow")
+    @Scheduled(initialDelay = 60 * 1000, fixedDelay = 20000)
     public void doScheduledWork() {
-        System.out.println("method");
 
         for (String num : telegramUsers.getMapDate().keySet()){
             for (User user : telegramUsers.getUserMap().values()){
                 if (!user.getSendHW().contains(num)){
-
-                    SendMessage sendMessage = new SendMessage();
-                    sendMessage.setChatId(user.getChatId());
-                    sendMessage.setText("Вы ещё не сделали домашнее задание " + num + "!");
-                    try {
-                        mainTelegramBot.execute(sendMessage);
-                    } catch (TelegramApiException e) {
-                        e.printStackTrace();
+                    if (!user.getFailedHW().containsKey(num)){
+                        user.getFailedHW().put(num, 0);
+                    }
+                    if (user.getFailedHW().get(num) < 3) {
+                        SendMessage sendMessage = new SendMessage();
+                        sendMessage.setChatId(user.getChatId());
+                        sendMessage.setText("Вы ещё не сделали домашнее задание " + num + "!");
+                        try {
+                            mainTelegramBot.execute(sendMessage);
+                        } catch (TelegramApiException e) {
+                            e.printStackTrace();
+                        }
+                        user.getFailedHW().put(num, user.getFailedHW().get(num) + 1);
                     }
                 }
             }
@@ -40,14 +44,19 @@ public class BackgroundBot {
         for (String num : telegramUsers.getMapDateOther().keySet()){
             for (User user : telegramUsers.getUserMap().values()){
                 if ( !user.getSendOtherHW().contains(num)){
-
-                    SendMessage sendMessage = new SendMessage();
-                    sendMessage.setChatId(user.getChatId());
-                    sendMessage.setText("Вы ещё не сделали дополнительное домашнее задание " + num + "!");
-                    try {
-                        mainTelegramBot.execute(sendMessage);
-                    } catch (TelegramApiException e) {
-                        e.printStackTrace();
+                    if (!user.getFailedOtherHW().containsKey(num)){
+                        user.getFailedOtherHW().put(num, 0);
+                    }
+                    if (user.getFailedOtherHW().get(num) < 3) {
+                        SendMessage sendMessage = new SendMessage();
+                        sendMessage.setChatId(user.getChatId());
+                        sendMessage.setText("Вы ещё не сделали дополнительное домашнее задание " + num + "!");
+                        try {
+                            mainTelegramBot.execute(sendMessage);
+                        } catch (TelegramApiException e) {
+                            e.printStackTrace();
+                        }
+                        user.getFailedOtherHW().put(num, user.getFailedOtherHW().get(num) + 1);
                     }
                 }
             }

@@ -3,10 +3,8 @@ package org.itmo.Components.model;
 import com.google.api.services.drive.model.File;
 import lombok.Getter;
 import lombok.Setter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
+
+import java.util.*;
 
 /**
  * класс хранящий состояние и данные студента
@@ -29,6 +27,9 @@ public class User {
     private String rowId;    //номер строки студента в созданной таблице
     private List<Question> listQuestion = new ArrayList<>();   //список вопросов
     private String vip;
+    private Map<String, Integer> failedHW = new HashMap<>(); //мэп с неотпраленными основными дз и кол-вом  оповещений
+    private Map<String, Integer> failedOtherHW = new HashMap<>(); //мэп с неотпраленными другими дз и кол-вом  оповещений
+
 
     public User(){}
 

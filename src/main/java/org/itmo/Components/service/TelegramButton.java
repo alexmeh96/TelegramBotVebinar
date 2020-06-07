@@ -2,6 +2,7 @@ package org.itmo.Components.service;
 
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
@@ -69,6 +70,33 @@ public class TelegramButton {
     }
 
     /**
+     * создание статических кнопок
+     * @param buttonListText  список названий кнопок
+     * @return  SendMessage с статическими кнопкими
+     */
+    public static SendPhoto createButtonPhoto(List<String> buttonListText) {
+        final ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
+        replyKeyboardMarkup.setSelective(true);
+        replyKeyboardMarkup.setResizeKeyboard(true);
+        replyKeyboardMarkup.setOneTimeKeyboard(false);
+
+        List<KeyboardRow> keyboard = new ArrayList<>();
+
+        for (String text : buttonListText){
+            KeyboardRow row = new KeyboardRow();
+            row.add(new KeyboardButton().setText(text));
+            keyboard.add(row);
+        }
+
+        replyKeyboardMarkup.setKeyboard(keyboard);
+
+        final SendPhoto sendPhoto = new SendPhoto();
+        sendPhoto.setReplyMarkup(replyKeyboardMarkup);
+
+        return sendPhoto;
+    }
+
+    /**
      * меню студента
      * @param message текстовое сообщение
      * @return SendMessage с статическими кнопкими
@@ -81,6 +109,16 @@ public class TelegramButton {
         stringList.add("Рейтинг студентов");
 
         return TelegramButton.createButton(message, stringList);
+    }
+
+    public static SendPhoto userMenuPhoto(){
+        List<String> stringList = new ArrayList<>();
+        stringList.add("Отправить домашнее задание");
+        stringList.add("Связаться со службой поддержки");
+        stringList.add("Пароль от личного кабинета");
+        stringList.add("Рейтинг студентов");
+
+        return TelegramButton.createButtonPhoto(stringList);
     }
 
     /**
