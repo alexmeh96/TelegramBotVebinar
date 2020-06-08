@@ -106,6 +106,7 @@ public class TelegramButton {
         stringList.add("Отправить домашнее задание📚");
         stringList.add("Помощь🆘");
         stringList.add("Пароль от личного кабинета🤫");
+        stringList.add("Баланс💳");
         stringList.add("Рейтинг студентов🥇");
 
         return TelegramButton.createButton(message, stringList);
@@ -116,7 +117,17 @@ public class TelegramButton {
         stringList.add("Отправить домашнее задание📚");
         stringList.add("Помощь🆘");
         stringList.add("Пароль от личного кабинета🤫");
+        stringList.add("Баланс💳");
         stringList.add("Рейтинг студентов🥇");
+
+        return TelegramButton.createButtonPhoto(stringList);
+    }
+
+    public static SendPhoto helpMenuPhoto(){
+        List<String> stringList = new ArrayList<>();
+        stringList.add("Связаться с администратором📝");
+        stringList.add("Задать вопрос❓");
+        stringList.add("Назад⬅️");
 
         return TelegramButton.createButtonPhoto(stringList);
     }

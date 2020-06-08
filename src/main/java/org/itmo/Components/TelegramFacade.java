@@ -129,6 +129,20 @@ public class TelegramFacade {
 
                 }
                 break;
+            case "Баланс💳":
+                User user = telegramUsers.getUserMap().get(username);
+                String message = user.getUsernameSheet() + ", сейчас у вас " + user.getCash() + " монет💰";
+                SendPhoto sendPhoto = new SendPhoto();   //получаем меню студента
+                java.io.File file = new java.io.File("src/main/resources/img/balans.png");
+                sendPhoto.setPhoto(file);
+                sendPhoto.setCaption(message).setChatId(chatId);
+                try {
+                    mainTelegramBot.execute(sendPhoto);
+                } catch (TelegramApiException e) {
+                    e.printStackTrace();
+                }
+                break;
+
             case "Обновить студентов":  //ADMIN
                 telegramUsers.getAdminMap().get(username).statusFalse();   //сбрасываем состояние админа
                 try {
@@ -139,14 +153,17 @@ public class TelegramFacade {
                 break;
             case "Помощь🆘":    //STUDENT
                 telegramUsers.getUserMap().get(username).statusFalse();  //сбрасываем состояние студента
-
-                List<String> stringList = new ArrayList<>();
-                stringList.add("Связаться с администратором📝");
-                stringList.add("Задать вопрос❓");
-                stringList.add("⬅️");
-                sendMessage = telegramButton.createButton( "В зависимости от вашей проблемы, выберите чья помощь вам нужна🤔\n" +
-                        "Администратора или организаторов курса?", stringList);
-                sendMessage.setChatId(chatId);
+                sendPhoto = TelegramButton.helpMenuPhoto();   //получаем меню студента
+                file = new java.io.File("src/main/resources/img/teh.png");
+                sendPhoto.setPhoto(file);
+                message = "В зависимости от вашей проблемы, выберите чья помощь вам нужна🤔\n" +
+                        "Администратора или организаторов курса?";
+                sendPhoto.setCaption(message).setChatId(chatId);
+                try {
+                    mainTelegramBot.execute(sendPhoto);
+                } catch (TelegramApiException e) {
+                    e.printStackTrace();
+                }
                 break;
             case "Связаться с администратором📝":    //STUDENT
                 telegramUsers.getUserMap().get(username).statusFalse();   //сбрасываем состояние студента
@@ -157,7 +174,7 @@ public class TelegramFacade {
                 telegramUsers.getUserMap().get(username).setSendHomework(false);
                 sendMessage.setChatId(chatId).setText("Введите ваш вопрос💬");
                 break;
-            case "⬅️":   //STUDENT
+            case "Назад⬅️":   //STUDENT
                 telegramUsers.getUserMap().get(username).statusFalse();
                 sendMessage = TelegramButton.userMenu("Меню");
                 sendMessage.setChatId(chatId);
@@ -196,16 +213,17 @@ public class TelegramFacade {
             case "/help":
                 System.out.println("help");
                 sendMessage.setText("<b>Функционал бота: </b>👾\n" +
-                        "🟢Для отправки основного домашнего задания нажмите на кнопку \"Отправить домашнее задание\" и выберите нужное\n" +
-                        "🟢Для отправки дополнительного домашнего задания выберите файл и напишите в текстовом сообщение #день№ 👉🏻 (#день1)\n" +
-                        "🟢Для того чтобы получить пароль нажмите на кнопку \"Пароль от личного кабинета\"\n" +
-                        "🟢Чтобы посмотеть рейтинг студентов по количеству монет нажмите на кнопку \"Рейтинг участников\"\n" +
-                        "🟢Если у вас есть вопросы, вы можете нажать на кнопку \"Связаться со службой поддержки\"").setParseMode("HTML").setChatId(chatId);
+                        "🟢Для отправки основного домашнего задания нажмите на кнопку <i>\"Отправить домашнее задание\"</i> и выберите нужное\n" +
+                        "🟢Для отправки дополнительного домашнего задания выберите файл и напишите в текстовом сообщение <i>#отчет№ 👉🏻 (#отчет)</i>\n" +
+                        "🟢Для того чтобы получить пароль нажмите на кнопку <i>\"Пароль от личного кабинета\"</i>\n" +
+                        "🟢Чтобы посмотеть рейтинг студентов по количеству монет нажмите на кнопку <i>\"Рейтинг студентов\"</i>\n" +
+                        "🟢Проверить свой баланс вы можете нажав на кнопку <i>\"Баланс\"</i>\n" +
+                        "🟢Если у вас есть вопросы, вы можете нажать на кнопку <i>\"Помощь\"</i>").setParseMode("HTML").setChatId(chatId);
                 break;
             default:
                 //Если это студент и он должен отправить вопрос
                 if(telegramUsers.getUserMap().containsKey(username) && telegramUsers.getUserMap().get(username).isSendQuestion()){
-                    User user = telegramUsers.getUserMap().get(username);
+                    user = telegramUsers.getUserMap().get(username);
                     user.statusFalse();
                     date = new Date(update.getMessage().getDate()* 1000l);     //получаем дату отправки
                     String text = update.getMessage().getText();
@@ -451,7 +469,7 @@ public class TelegramFacade {
             if (admin.isSendOtherHW()){
                 Date date =  new Date(update.getMessage().getDate() * 1000l);  // дата рассылки доп дз админом
                 telegramUsers.getMapDateOther().put(admin.getOtherHW(), date);  //добавляем номер доп дз с датой в мэп
-                sendMessage.setText("Дополнительное домашнее задание " + admin.getOtherHW() + "разослано успешно!");
+                sendMessage.setText("Дополнительное домашнее задание " + admin.getOtherHW() + " разослано успешно!");
                 admin.statusFalse();
                 return sendMessage;
             }
@@ -531,13 +549,13 @@ public class TelegramFacade {
             if (admin.isSendOtherHW()) {
                 Date date = new Date(update.getMessage().getDate() * 1000l);  // дата рассылки доп дз админом
                 telegramUsers.getMapDateOther().put(admin.getOtherHW(), date);  //добавляем номер доп дз с датой в мэп
-                sendMessage.setText("дополнительное домашнее задание " + admin.getOtherHW() + " разослано успешно!");
+                sendMessage.setText("Дополнительное домашнее задание " + admin.getOtherHW() + " разослано успешно!");
                 admin.statusFalse();
                 return sendMessage;
             }
 
             admin.statusFalse();
-            return sendMessage.setText("текст с фото разосланы успешно!");
+            return sendMessage.setText("Текст с фото разосланы успешно!");
 
         }
         //Если это студент
