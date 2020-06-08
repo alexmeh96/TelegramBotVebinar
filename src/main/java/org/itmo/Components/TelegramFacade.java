@@ -265,7 +265,7 @@ public class TelegramFacade {
 
                 String caption = update.getMessage().getCaption();
                 System.out.println(caption);
-                if (caption!=null && caption.toLowerCase().indexOf("#день") == 0) {
+                if (caption!=null && caption.toLowerCase().indexOf("#отчет") == 0) {
                     String num = caption.substring(5);
 
                     long chatId = update.getMessage().getChatId();
@@ -285,7 +285,7 @@ public class TelegramFacade {
                         sendHW = telegramBotGoogleDrive.sendHomework(  //возвращает true если файл был успешно отправлен
                                 inputStream,
                                 fileName,
-                                "#день" + num,
+                                "#отчет" + num,
                                 userFolder);
 
                     } catch (Exception e) {
@@ -431,26 +431,34 @@ public class TelegramFacade {
                 java.io.File file = telegramBotFile.getFile(fileId);  //получаем файл с видео
                 SendVideo sendVideo = new SendVideo();
                 sendVideo.setVideo(file);
-                sendVideo.setCaption(admin.getText());   // устанавливаем текст видео max 1024 символов
+//                sendVideo.setCaption(admin.getText());   // устанавливаем текст видео max 1024 символов
 
                 mainTelegramBot.execute(sendMessage.setText("Рассылка студентам началась!"));
+                sendMessage.setText(admin.getText()).setChatId(chatId);
+
                 try {
                     if (admin.isVipSending()) {
                         for (User user : telegramUsers.getUserMap().values()) {
                             if (user.getVip().equals("1")) {
                                 sendVideo.setChatId(user.getChatId());
+                                sendMessage.setChatId(user.getChatId());
                                 mainTelegramBot.execute(sendVideo);
+                                mainTelegramBot.execute(sendMessage);
                             }
                         }
                     }else {
                         for (User user : telegramUsers.getUserMap().values()) {
                             sendVideo.setChatId(user.getChatId());
+                            sendMessage.setChatId(user.getChatId());
                             mainTelegramBot.execute(sendVideo);
+                            mainTelegramBot.execute(sendMessage);
                         }
                     }
 
                     sendVideo.setChatId(chatId);
+                    sendMessage.setChatId(chatId);
                     mainTelegramBot.execute(sendVideo);
+                    mainTelegramBot.execute(sendMessage);
                     file.delete();
                 } catch (TelegramApiException e) {
                     e.printStackTrace();
@@ -511,27 +519,35 @@ public class TelegramFacade {
                 SendPhoto sendPhoto = new SendPhoto();
                 java.io.File file = telegramBotFile.getFile(fileId);  //получаем файл изображения
 
-                sendPhoto.setCaption(admin.getText());  //устанавливаем текст к изображению max 1024 символов
+//                sendPhoto.setCaption(admin.getText());  //устанавливаем текст к изображению max 1024 символов
                 sendPhoto.setPhoto(file);
 
                 mainTelegramBot.execute(sendMessage.setText("Рассылка студентам началась!"));
+                sendMessage.setText(admin.getText()).setChatId(chatId);
+
                 try {
                     if (admin.isVipSending()) {
                         for (User user : telegramUsers.getUserMap().values()) {
                             if (user.getVip().equals("1")) {
                                 sendPhoto.setChatId(user.getChatId());
+                                sendMessage.setChatId(user.getChatId());
                                 mainTelegramBot.execute(sendPhoto);
+                                mainTelegramBot.execute(sendMessage);
                             }
                         }
                     } else {
                         for (User user : telegramUsers.getUserMap().values()) {
                             sendPhoto.setChatId(user.getChatId());
+                            sendMessage.setChatId(user.getChatId());
                             mainTelegramBot.execute(sendPhoto);
+                            mainTelegramBot.execute(sendMessage);
                         }
                     }
 
                     sendPhoto.setChatId(chatId);
+                    sendMessage.setChatId(chatId);
                     mainTelegramBot.execute(sendPhoto);
+                    mainTelegramBot.execute(sendMessage);
                     file.delete();
 
                 } catch (TelegramApiException e) {
@@ -564,7 +580,7 @@ public class TelegramFacade {
 
             String caption = update.getMessage().getCaption();
             System.out.println(caption);
-            if (!caption.isEmpty() && caption.toLowerCase().indexOf("#день") == 0) {
+            if (!caption.isEmpty() && caption.toLowerCase().indexOf("#отчет") == 0) {
                 String num = caption.substring(5);
 
                 long chatId = update.getMessage().getChatId();
@@ -584,7 +600,7 @@ public class TelegramFacade {
                     sendHW = telegramBotGoogleDrive.sendHomework(  //возвращает true если файл был успешно отправлен
                             inputStream,
                             fileName,
-                            "#день" + num,
+                            "#отчет" + num,
                             userFolder);
 
                 } catch (Exception e) {
