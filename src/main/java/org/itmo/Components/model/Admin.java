@@ -13,6 +13,7 @@ public class Admin {
     private String name;    //ник админа в телеграме
     private Long chatId;    //Id чата
     private boolean uploadText;  //состояние загрузки текста
+    private boolean uploadFile;  //состояние загрузки текста
     private boolean uploadVideo;  //состояние загрузки видео
     private boolean uploadPhoto;   //состояние загрузки изображения
     private String HW;     //номер домашнего задания для рассылки
@@ -20,6 +21,9 @@ public class Admin {
     private String otherHW;  //номер дополнительного домашнего задания для рассылки
     private boolean sendOtherHW;  //состояние отправки дополнительного дз
     private boolean vipSending;
+    private boolean loadFile;
+
+    private boolean sendingVideo;
 
     public Admin(String name, Long chatId){
         this.name = name;
@@ -35,12 +39,14 @@ public class Admin {
     public void statusFalse(){
         text = "";
         uploadText=false;
+        uploadFile=false;
         uploadVideo=false;
         uploadPhoto=false;
         HW = "";
         otherHW = "";
         sendOtherHW = false;
         vipSending = false;
+        loadFile = false;
     }
 
     @Override

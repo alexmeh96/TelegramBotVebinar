@@ -71,13 +71,13 @@ public class BotMessage {
                 if (i==user.getListQuestion().size())
                     user.setListQuestion(new ArrayList<>());
                 else if (i>0){
-                    text.append("<b>").append(user.getUsernameSheet()).append("</b>\n");
+                    text.append("<b>").append("@").append(user.getUsername()).append("</b>\n");
                     user.setListQuestion(user.getListQuestion().subList(i, user.getListQuestion().size()));
                     for (Question qu : user.getListQuestion()) {
                         text.append(qu.toString());
                     }
                 }else{
-                    text.append("<b>").append(user.getUsernameSheet()).append("</b>\n");
+                    text.append("<b>").append("@").append(user.getUsername()).append("</b>\n");
                     for (Question qu : user.getListQuestion()) {
                         text.append(qu.toString());
                     }
@@ -100,7 +100,7 @@ public class BotMessage {
      */
     public String cashHW(TelegramUsers telegramUsers, User user, Date date){
         String num = user.getNumFile();
-        Date firstDate = new Date(date.getTime()- BotProperty.TIME_HW);
+        Date firstDate = new Date(date.getTime()- BotProperty.map.get(num));
         if(!user.getSendHW().contains(num) && telegramUsers.getMapDate().containsKey(num)){
             if (firstDate.before(telegramUsers.getMapDate().get(num))) {
                 user.setCash(user.getCash() + BotProperty.CASH_HW);

@@ -1,5 +1,8 @@
 package org.itmo.config;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class BotProperty {
     //колонки новой таблицы
     public static final byte SHEET_NAME_COL=0;
@@ -11,7 +14,7 @@ public class BotProperty {
     public static final byte SHEET_CASH_COL=6;
     public static final byte SHEET_TARIF_COL=7;
 
-    public static final String TOKEN = "1283464616:AAGdDzAlPb_JxQ72VRic9_rN-6WRG7lM2S4";
+    public static final String TOKEN = "1158197395:AAGIe0V25U0FgH9SuYkuFfz80EYii76cd7Q";
     public static final String PATH = "src/main";
 
     public static final String ADMIN = "@MarkStav";
@@ -20,11 +23,19 @@ public class BotProperty {
     public static final String SPREADSHEET_ID = "1wOOgK2KK6OE7tmLPsJR-_Jt_sBVfCtD0Qk-n1CqZpbc";
 
     // Время существования вопроса
-    public static final Long TIME_QUESTION = 120_000L;
+    public static final Long TIME_QUESTION = 86_400_000L;
 
     // Срок сдачи дз
-    public static final Long TIME_HW = 120_000L;
-    public static final Long TIME_OTHER_HW = 120_000L;
+    public static Map<String, Long> map = new HashMap<>();
+    static {
+        map.put("1", 86_400_000L);   //1
+        map.put("2", 259_200_000L);   //3
+        map.put("3", 86_400_000L);    //1
+        map.put("4", 345_600_000L);    //4
+
+    }
+
+    public static final Long TIME_OTHER_HW = 86_400_000L;
 
     // Успешное выполнение домашки
     //основа

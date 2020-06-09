@@ -39,6 +39,23 @@ public class TelegramButton {
         return markupInline;
     }
 
+    public static InlineKeyboardMarkup createInlineButton2(List<String> buttonListText, List<String> buttonListId){
+        InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
+        List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
+        List<InlineKeyboardButton> rowInline = new ArrayList<>();
+
+        rowInline.add(new InlineKeyboardButton().setText(buttonListText.get(0)).setCallbackData(buttonListId.get(0)));
+        rowInline.add(new InlineKeyboardButton().setText(buttonListText.get(1)).setCallbackData(buttonListId.get(1)));
+        rowsInline.add(rowInline);
+        rowInline = new ArrayList<>();
+        rowInline.add(new InlineKeyboardButton().setText(buttonListText.get(2)).setCallbackData(buttonListId.get(2)));
+        rowInline.add(new InlineKeyboardButton().setText(buttonListText.get(3)).setCallbackData(buttonListId.get(3)));
+        rowsInline.add(rowInline);
+
+        markupInline.setKeyboard(rowsInline);
+        return markupInline;
+    }
+
     /**
      * создание статических кнопок
      * @param textMessage текстовое сообщение
@@ -152,15 +169,17 @@ public class TelegramButton {
     public static InlineKeyboardMarkup sending(){
         List<String> stringList = new ArrayList<>();
         stringList.add("текст");
+        stringList.add("текст и файл");
         stringList.add("текст и видео");
         stringList.add("текст и картинка");
 
         List<String> stringId = new ArrayList<>();
         stringId.add("text");
+        stringId.add("textFile");
         stringId.add("textVideo");
         stringId.add("textImage");
 
-        return TelegramButton.createInlineButton(stringList, stringId);
+        return TelegramButton.createInlineButton2(stringList, stringId);
     }
 
     public static SendMessage sendingChoose(){

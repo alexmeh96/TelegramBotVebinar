@@ -1,20 +1,35 @@
 package org.itmo.Components.service;
 
 import lombok.Cleanup;
+import org.itmo.Components.model.Admin;
+import org.itmo.Components.model.TelegramUsers;
+import org.itmo.Components.model.User;
+import org.itmo.MainTelegramBot;
 import org.itmo.config.BotProperty;
 import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
+import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
+import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.send.SendVideo;
+import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.io.*;
 
 import java.net.URL;
+import java.util.Date;
 
 /**
  * обработка загруженного файла
  */
 @Component
 public class TelegramBotFile {
+
+    @Autowired
+    TelegramUsers telegramUsers;
 
     final String FILE_ID_URL = "https://api.telegram.org/bot" + BotProperty.TOKEN + "/getFile?file_id=";
     final String FILE_PATH_URL = "https://api.telegram.org/file/bot" + BotProperty.TOKEN + "/";
@@ -99,4 +114,100 @@ public class TelegramBotFile {
         JSONObject path = jresult.getJSONObject("result");
         return path.getString("file_path");
     }
+
+    @Async
+    public void uploadVideo(MainTelegramBot mainTelegramBot, Update update, String username) throws TelegramApiException {
+        Admin admin = telegramUsers.getAdminMap().get(username);
+        admin.setSendingVideo(true);
+
+
+        SendMessage sendMessage = new SendMessage();
+        long chatId = update.getMessage().getChatId();
+        sendMessage.setChatId(chatId);
+
+        try {
+            String fileId = update.getMessage().getVideo().getFileId();
+//            java.io.File file = telegramBotFile.getFile(fileId);  //получаем файл с видео
+            java.io.File file = getFile(fileId);  //получаем файл с видео
+            SendVideo sendVideo = new SendVideo();
+            sendVideo.setVideo(file);
+            sendVideo.setWidth(600);
+            sendVideo.setHeight(400);
+//                sendVideo.setCaption(admin.getText());   // устанавливаем текст видео max 1024 символов
+
+            mainTelegramBot.execute(sendMessage.setText("Рассылка студентам началась!"));
+            sendMessage.setText(admin.getText()).setChatId(chatId);
+
+            try {
+                if (admin.isVipSending()) {
+                    for (User user : telegramUsers.getUserMap().values()) {
+                        if (user.getVip().equals("1")) {
+                            sendVideo.setChatId(user.getChatId());
+                            sendMessage.setChatId(user.getChatId());
+                            mainTelegramBot.execute(sendVideo);
+                            mainTelegramBot.execute(sendMessage);
+                        }
+                    }
+                }else {
+                    for (User user : telegramUsers.getUserMap().values()) {
+                        sendVideo.setChatId(user.getChatId());
+                        sendMessage.setChatId(user.getChatId());
+                        mainTelegramBot.execute(sendVideo);
+                        mainTelegramBot.execute(sendMessage);
+                    }
+                }
+
+                sendVideo.setChatId(chatId);
+                sendMessage.setChatId(chatId);
+                mainTelegramBot.execute(sendVideo);
+                mainTelegramBot.execute(sendMessage);
+                file.delete();
+            } catch (TelegramApiException e) {
+                e.printStackTrace();
+                admin.statusFalse();
+                admin.setSendingVideo(false);
+                file.delete();
+                if (admin.getHW().isEmpty()) { //еслиадмин делает рассылку видео с текстом
+                    mainTelegramBot.execute(sendMessage.setText("Не удалось разослать видео с текстом!"));
+                    return;
+                }
+                else {  //еслиадмин делает рассылку дз
+                    mainTelegramBot.execute(sendMessage.setText("Не удалось разослать домашнее задание " + admin.getHW()));
+                    return;
+                }
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            admin.statusFalse();
+            admin.setSendingVideo(false);
+            mainTelegramBot.execute(sendMessage.setText("Не удалось загрузить видео!"));
+            return ;
+        }
+        if (admin.isSendOtherHW()){
+            Date date =  new Date(update.getMessage().getDate() * 1000l);  // дата рассылки доп дз админом
+            telegramUsers.getMapDateOther().put(admin.getOtherHW(), date);  //добавляем номер доп дз с датой в мэп
+            sendMessage.setText("Дополнительное домашнее задание " + admin.getOtherHW() + " разослано успешно!");
+            admin.statusFalse();
+            admin.setSendingVideo(false);
+            mainTelegramBot.execute(sendMessage);
+            return ;
+        }
+
+        if (admin.getHW().isEmpty()) {  //еслиадмин делает рассылку видео с текстом
+            admin.statusFalse();
+            admin.setSendingVideo(false);
+            mainTelegramBot.execute(sendMessage.setText("Текст с видео разосланы успешно!"));
+            return ;
+        } else {    //еслиадмин делает рассылку дз
+            Date date =  new Date(update.getMessage().getDate() * 1000l);  // дата рассылки дз админом
+            telegramUsers.getMapDate().put(admin.getHW(), date);  //добавляем номер дз с датой в мэп
+            sendMessage.setText("Домашнее задание " + admin.getHW() + " разослано успешно!");
+            admin.statusFalse();
+            admin.setSendingVideo(false);
+            mainTelegramBot.execute(sendMessage);
+            return ;
+        }
+    }
+
 }
