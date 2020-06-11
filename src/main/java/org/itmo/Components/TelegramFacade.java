@@ -70,8 +70,10 @@ public class TelegramFacade {
 
                     if(!userData.isEmpty()) {  //если map данных не пуст
                         telegramUsers.getAdminMap().put(username, new Admin(username, chatId));   //добавляем в map админов нового админа
+
                         try {
                             BotGoogleSheet.Update(BotProperty.SHEET_ROLE_COL, "2", "1");   //ставим 1 в ячейку role новой таблицы
+                            BotGoogleSheet.Update(BotProperty.SHEET_CHAT_ID_COL, "2", String.valueOf(chatId));
                         } catch (IOException | GeneralSecurityException e) {
                             e.printStackTrace();
                         }
@@ -103,6 +105,15 @@ public class TelegramFacade {
                         File folderDirectory = telegramBotGoogleDrive.activate(userData.get("nameSheet"));  //получаем директорию студента
 
                         User user = new User(chatId, username, userData.get("nameSheet"), folderDirectory, userData.get("row"));  //создаём студента
+                        try {
+                            BotGoogleSheet.Update(BotProperty.SHEET_CHAT_ID_COL, userData.get("row"), String.valueOf(chatId));
+
+                        } catch (IOException | GeneralSecurityException e) {
+                            e.printStackTrace();
+                        }
+
+                        System.out.println(user);
+
                         telegramUsers.getUserMap().put(username, user);  //добавляем студента в мэп студентов
                         try {
                             mainTelegramBot.execute(sendPhoto);
@@ -274,6 +285,12 @@ public class TelegramFacade {
 
                     user.statusFalse();
 
+                    if(!telegramUsers.getMapDateOther().containsKey(user.getNumFile())){
+                        Date date = new Date(update.getMessage().getDate() * 1000l);    //дата отправки дз студентом
+                        String text = botMessage.cashOtherHW(telegramUsers, user, date, num);    //получение сообщения успешной отправки дз и изменение монет в таблице
+                        return sendMessage.setText(text);
+                    }
+
                     mainTelegramBot.execute(sendMessage.setText("Дополнительное домашнее задание " + caption + " отправляется!🤞🏻"));
 
                     String fileId = update.getMessage().getDocument().getFileId();   //id файда отправленного студентом
@@ -311,6 +328,13 @@ public class TelegramFacade {
                 sendMessage.setChatId(chatId);
 
                 user.statusFalse();
+
+                if(!telegramUsers.getMapDate().containsKey(user.getNumFile())){
+                    Date date = new Date(update.getMessage().getDate() * 1000l);    //дата отправки дз студентом
+                    String text = botMessage.cashHW(telegramUsers, user, date);    //получение сообщения успешной отправки дз и изменение монет в таблице
+                    if (text == null) return null;
+                    return sendMessage.setText(text);
+                }
 
                 mainTelegramBot.execute(sendMessage.setText("Домашнее задание " + user.getNumFile() + " отправляется!💌"));
 
@@ -402,8 +426,17 @@ public class TelegramFacade {
                     return sendMessage.setChatId(chatId).setText("Не удалось разослать текст!");
                 }
                 if (admin.isSendOtherHW()){
-                    Date date =  new Date(update.getMessage().getDate() * 1000l);  // дата рассылки доп дз админом
+                    Date date =  new Date(update.getMessage().getDate() * 1000L);  // дата рассылки доп дз админом
                     telegramUsers.getMapDateOther().put(admin.getOtherHW(), date);  //добавляем номер доп дз с датой в мэп
+
+                    try(BufferedWriter bw = new BufferedWriter(new FileWriter("src/main/resources/dateOtherHW.txt", true)))
+                    {
+                        bw.write(String.valueOf(update.getMessage().getDate() * 1000L) + "\n");
+
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+
                     sendMessage.setText("Домашнее задание " + admin.getHW() + " разослано успешно!");
                     admin.statusFalse();
                     return sendMessage.setChatId(chatId);
@@ -473,6 +506,15 @@ public class TelegramFacade {
             if (admin.isSendOtherHW()) {
                 Date date = new Date(update.getMessage().getDate() * 1000l);  // дата рассылки доп дз админом
                 telegramUsers.getMapDateOther().put(admin.getOtherHW(), date);  //добавляем номер доп дз с датой в мэп
+
+                try(BufferedWriter bw = new BufferedWriter(new FileWriter("src/main/resources/dateOtherHW.txt", true)))
+                {
+                    bw.write(String.valueOf(update.getMessage().getDate() * 1000l) + "\n");
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
                 sendMessage.setText("Дополнительное домашнее задание " + admin.getOtherHW() + " разослано успешно!");
                 admin.statusFalse();
                 return sendMessage;
@@ -572,6 +614,15 @@ public class TelegramFacade {
             if (admin.isSendOtherHW()) {
                 Date date = new Date(update.getMessage().getDate() * 1000l);  // дата рассылки доп дз админом
                 telegramUsers.getMapDateOther().put(admin.getOtherHW(), date);  //добавляем номер доп дз с датой в мэп
+
+                try(BufferedWriter bw = new BufferedWriter(new FileWriter("src/main/resources/dateOtherHW.txt", true)))
+                {
+                    bw.write(String.valueOf(update.getMessage().getDate() * 1000l) + "\n");
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
                 sendMessage.setText("Дополнительное домашнее задание " + admin.getOtherHW() + " разослано успешно!");
                 admin.statusFalse();
                 return sendMessage;
@@ -595,6 +646,13 @@ public class TelegramFacade {
                 sendMessage.setChatId(chatId);
 
                 user.statusFalse();
+
+                if(!telegramUsers.getMapDateOther().containsKey(user.getNumFile())){
+                    Date date = new Date(update.getMessage().getDate() * 1000l);    //дата отправки дз студентом
+                    String text = botMessage.cashOtherHW(telegramUsers, user, date, num);    //получение сообщения успешной отправки дз и изменение монет в таблице
+                    if (text == null) return null;
+                    return sendMessage.setText(text);
+                }
 
                 mainTelegramBot.execute(sendMessage.setText("Дополнительное домашнее задание " + caption + " отправляется!✉️"));
 
@@ -632,6 +690,13 @@ public class TelegramFacade {
                 sendMessage.setChatId(chatId);
 
                 user.statusFalse();
+
+                if(!telegramUsers.getMapDate().containsKey(user.getNumFile())){
+                    Date date = new Date(update.getMessage().getDate() * 1000l);    //дата отправки дз студентом
+                    String text = botMessage.cashHW(telegramUsers, user, date);    //получение сообщения успешной отправки дз и изменение монет в таблице
+                    if (text == null) return null;
+                    return sendMessage.setText(text);
+                }
 
                 mainTelegramBot.execute(sendMessage.setText("Домашнее задание " + user.getNumFile() + " отправляется!💌"));
 

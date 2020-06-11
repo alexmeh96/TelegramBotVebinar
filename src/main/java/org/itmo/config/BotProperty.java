@@ -13,6 +13,9 @@ public class BotProperty {
     public static final byte SHEET_ROLE_COL=5;
     public static final byte SHEET_CASH_COL=6;
     public static final byte SHEET_TARIF_COL=7;
+    public static final byte SHEET_CHAT_ID_COL=8;
+
+    public static int ID_ROW=2;
 
     public static final String TOKEN = "1158197395:AAGIe0V25U0FgH9SuYkuFfz80EYii76cd7Q";
     public static final String PATH = "src/main";

@@ -15,6 +15,9 @@ public class CreateFolder {
 
         File fileMetadata = new File();
 
+
+
+
         fileMetadata.setName(folderName);
         fileMetadata.setMimeType("application/vnd.google-apps.folder");
 
@@ -28,6 +31,7 @@ public class CreateFolder {
         // Создание Folder.
         // Возвращает File object с id и именем полей будут присвоены значения
         File file = driveService.files().create(fileMetadata).setFields("id, name").execute();
+
 
         // Даём спикеру доступ к дз
         //SendPermission.createPermissionForEmailSPEAKER(file.getId(), SendPermission.GOOGLE_SPEAKER_EMAIL);

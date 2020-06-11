@@ -16,10 +16,17 @@ import com.google.api.services.sheets.v4.model.AppendValuesResponse;
 import com.google.api.services.sheets.v4.model.UpdateValuesResponse;
 import com.google.api.services.sheets.v4.model.ValueRange;
 import lombok.extern.slf4j.Slf4j;
+import org.itmo.Components.model.Admin;
+import org.itmo.Components.model.TelegramUsers;
+import org.itmo.Components.model.User;
+import org.itmo.Components.service.BotMessage;
+import org.itmo.Components.service.TelegramButton;
 import org.itmo.config.BotProperty;
 import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 
 import java.io.*;
 import java.security.GeneralSecurityException;
@@ -31,13 +38,13 @@ import java.util.regex.Pattern;
 @Slf4j
 @Component
 public class BotGoogleSheet {
+
     private static final org.apache.logging.log4j.Logger log = org.apache.logging.log4j.LogManager.getLogger(BotGoogleSheet.class);
 
     private String uploadPath = BotProperty.PATH + "/resources/";
 
     private static final String APPLICATION_NAME = "Google Sheet";
 
-    final private int idRow = 2;
 
     public static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
     private static final String TOKENS_DIRECTORY_PATH = "tokens";
@@ -47,6 +54,8 @@ public class BotGoogleSheet {
 //    }
     private static final List<String> SCOPES = Collections.singletonList(SheetsScopes.SPREADSHEETS_READONLY);
     private static final String CREDENTIALS_FILE_PATH = "/credentials.json";
+
+
 
     private Credential authorize() throws Exception {
 //        InputStream in = Main.class.getResourceAsStream("credentials.json");
@@ -96,7 +105,7 @@ public class BotGoogleSheet {
     }
 
     public String makeRange(int idRow){
-        String range = "Full!A" + idRow + ":H" + idRow;
+        String range = "Full!A" + idRow + ":I" + idRow;
         return range;
     }
 
@@ -119,7 +128,7 @@ public class BotGoogleSheet {
         return values;
     }
 
-    private String correctUsername(String text){
+    public static String correctUsername(String text){
         Pattern pattern = Pattern.compile("[A-Za-z0-9_]{1,}");
         Matcher matcher = pattern.matcher(text);
         while (matcher.find()) {
@@ -129,8 +138,6 @@ public class BotGoogleSheet {
         }
         return text;
     }
-
-
 
 
     //Возвращае usernameSheet
@@ -150,7 +157,7 @@ public class BotGoogleSheet {
         if (mainTableList == null || mainTableList.isEmpty()){
             log.error("Основная таблица пустая!");
         } else {
-            int indexRow = idRow;
+
             for (List row : mainTableList) {
                 String name = correctUsername((String) row.get(4));
                 if (name.equals(username)){
@@ -158,9 +165,11 @@ public class BotGoogleSheet {
                     try {
                         List<List<Object>> list = new ArrayList();
                         list.add(row.subList(0, 5));
-                        indexRow = addWriter(indexRow, correct_num(list));
+                        userData.put("row", String.valueOf(BotProperty.ID_ROW));
+                        BotProperty.ID_ROW = addWriter(BotProperty.ID_ROW, correct_num(list));
                         userData.put("nameSheet", (String) row.get(0));
-                        userData.put("row", String.valueOf(indexRow));
+
+
 
                     } catch (IOException|GeneralSecurityException e) {
                         e.printStackTrace();
@@ -226,6 +235,7 @@ public class BotGoogleSheet {
             row.add(5, 0);
             row.add(6, 0);
             row.add(7, 0);
+            row.add(8, "");
         }
         return values;
     }
@@ -238,7 +248,7 @@ public class BotGoogleSheet {
      * @throws GeneralSecurityException
      */
     public static List<List<Object>> Reader() throws IOException, GeneralSecurityException {
-        String range = "Full!A2:H400";
+        String range = "Full!A2:I400";
         final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
         Sheets service = new Sheets.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT))
                 .setApplicationName(APPLICATION_NAME)
@@ -300,7 +310,7 @@ public class BotGoogleSheet {
 
     private static String correct_column(int id){
         String column;
-        List<Character> symbol = Arrays.asList('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H');
+        List<Character> symbol = Arrays.asList('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I');
         column = String.valueOf(symbol.get(id));
         return column;
     }

@@ -106,14 +106,15 @@ public class TelegramBotGoogleDrive {
     }
 
 
-    public File findFolder(String fileName, File folderSearch){
+    public static File findFolder(String fileName, File folderSearch){
         try {
             List<File> fileList;
             if(folderSearch == null)
                 fileList = GetSubFoldersByName.getGoogleRootFoldersByName(fileName);
             else
                 fileList = GetSubFoldersByName.getGoogleSubFolderByName(folderSearch.getId(), fileName);
-            return fileList.get(0);
+            System.out.println(fileList);
+            if(fileList!=null && !fileList.isEmpty()) return fileList.get(0);
         } catch (IOException e) {
             log.trace("Ошибка поиска папки {} : {}", fileName, e.getStackTrace());
 //            e.printStackTrace();

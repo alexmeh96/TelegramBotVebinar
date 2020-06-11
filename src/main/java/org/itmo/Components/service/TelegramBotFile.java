@@ -185,8 +185,15 @@ public class TelegramBotFile {
             return ;
         }
         if (admin.isSendOtherHW()){
-            Date date =  new Date(update.getMessage().getDate() * 1000l);  // дата рассылки доп дз админом
+            Date date =  new Date(update.getMessage().getDate() * 1000L);  // дата рассылки доп дз админом
             telegramUsers.getMapDateOther().put(admin.getOtherHW(), date);  //добавляем номер доп дз с датой в мэп
+            try(BufferedWriter bw = new BufferedWriter(new FileWriter("src/main/resources/dateOtherHW.txt", true)))
+            {
+                bw.write(String.valueOf(update.getMessage().getDate() * 1000L) + "\n");
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
             sendMessage.setText("Дополнительное домашнее задание " + admin.getOtherHW() + " разослано успешно!");
             admin.statusFalse();
             admin.setSendingVideo(false);
@@ -200,8 +207,17 @@ public class TelegramBotFile {
             mainTelegramBot.execute(sendMessage.setText("Текст с видео разосланы успешно!"));
             return ;
         } else {    //еслиадмин делает рассылку дз
-            Date date =  new Date(update.getMessage().getDate() * 1000l);  // дата рассылки дз админом
+            Date date =  new Date(update.getMessage().getDate() * 1000L);  // дата рассылки дз админом
             telegramUsers.getMapDate().put(admin.getHW(), date);  //добавляем номер дз с датой в мэп
+
+            try(BufferedWriter bw = new BufferedWriter(new FileWriter("src/main/resources/dateHW.txt", true)))
+            {
+                bw.write(String.valueOf(update.getMessage().getDate() * 1000L) + "\n");
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
             sendMessage.setText("Домашнее задание " + admin.getHW() + " разослано успешно!");
             admin.statusFalse();
             admin.setSendingVideo(false);

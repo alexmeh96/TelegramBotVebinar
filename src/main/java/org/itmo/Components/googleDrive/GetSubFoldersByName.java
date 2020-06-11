@@ -50,6 +50,10 @@ public class GetSubFoldersByName {
         return getGoogleSubFolderByName(null,subFolderName);
     }
 
+    public static File returnFile(String googleFolderIdParent, String subFolderName) throws IOException {
+        List<File> result = getGoogleSubFolderByName(googleFolderIdParent, subFolderName);
+        return result.get(0);
+    }
 
 
 }
